@@ -101,6 +101,9 @@ let state = {
   finished: false,
   won: false,
   empty: false,
+  day: null,
+  locked: false,
+  unlockAt: null,
 };
 
 function answerPool(mode) {
@@ -109,25 +112,17 @@ function answerPool(mode) {
   return CHARACTERS;
 }
 
-/* ---------- date / seeding (per-user rolling day, anchored to first visit) ---------- */
+/* ---------- date / seeding (shared answer for everyone, resets at midnight UTC) ---------- */
 
-const USER_EPOCH_KEY = "bakidle_user_epoch";
+const EPOCH_MS = Date.UTC(2026, 8, 6);
+const PERSONAL_LOCK_MS = 86400000;
 
-function getUserEpoch() {
-  let epoch = Number(localStorage.getItem(USER_EPOCH_KEY));
-  if (!epoch) {
-    epoch = Date.now();
-    localStorage.setItem(USER_EPOCH_KEY, String(epoch));
-  }
-  return epoch;
+function globalDayIndex() {
+  return Math.floor((Date.now() - EPOCH_MS) / 86400000);
 }
 
-function daysSinceEpoch() {
-  return Math.floor((Date.now() - getUserEpoch()) / 86400000);
-}
-
-function msUntilNextReset() {
-  return 86400000 - ((Date.now() - getUserEpoch()) % 86400000);
+function msUntilGlobalReset() {
+  return 86400000 - (((Date.now() - EPOCH_MS) % 86400000) + 86400000) % 86400000;
 }
 
 function hashSeed(n) {
@@ -138,13 +133,27 @@ function hashSeed(n) {
   return x >>> 0;
 }
 
-function dayIndexSeed(offset, poolSize) {
-  const days = daysSinceEpoch() + offset;
-  return hashSeed(days) % poolSize;
+function seedForDay(day, offset, poolSize) {
+  return hashSeed(day + offset) % poolSize;
 }
 
-function dailyKey(mode) {
-  return `bakidle_daily_${mode}_${daysSinceEpoch()}`;
+function dailyKey(mode, day) {
+  return `bakidle_daily_${mode}_${day}`;
+}
+
+/* ---------- personal per-mode lock (24h cooldown after finishing a mode) ---------- */
+
+function lockKey(mode) {
+  return `bakidle_lock_${mode}`;
+}
+
+function getModeLock(mode) {
+  const raw = localStorage.getItem(lockKey(mode));
+  return raw ? JSON.parse(raw) : null;
+}
+
+function setModeLock(mode, day) {
+  localStorage.setItem(lockKey(mode), JSON.stringify({ day, unlockAt: Date.now() + PERSONAL_LOCK_MS }));
 }
 
 /* ---------- global streak (spans all game modes) ---------- */
@@ -154,7 +163,7 @@ const GLOBAL_STREAK_KEY = "bakidle_streak_global";
 function loadGlobalStreak() {
   const raw = localStorage.getItem(GLOBAL_STREAK_KEY);
   const g = raw ? JSON.parse(raw) : { currentStreak: 0, maxStreak: 0, lastWinDay: null };
-  const today = daysSinceEpoch();
+  const today = globalDayIndex();
   if (g.lastWinDay !== null && g.lastWinDay !== today && g.lastWinDay !== today - 1) {
     g.currentStreak = 0;
     localStorage.setItem(GLOBAL_STREAK_KEY, JSON.stringify(g));
@@ -164,7 +173,7 @@ function loadGlobalStreak() {
 
 function recordGlobalWin() {
   const g = loadGlobalStreak();
-  const today = daysSinceEpoch();
+  const today = globalDayIndex();
   if (g.lastWinDay !== today) {
     g.currentStreak = g.lastWinDay === today - 1 ? g.currentStreak + 1 : 1;
     g.lastWinDay = today;
@@ -312,7 +321,7 @@ function addSimpleRow(guessChar) {
 /* ---------- core render ---------- */
 
 function updateDayNumber() {
-  els.dayNumber.textContent = `Daily #${daysSinceEpoch() + 1}`;
+  els.dayNumber.textContent = `Daily #${globalDayIndex() + 1}`;
 }
 
 function formatCountdown(ms) {
@@ -324,7 +333,10 @@ function formatCountdown(ms) {
 }
 
 function updateResetTimer() {
-  els.resetCountdown.textContent = formatCountdown(msUntilNextReset());
+  const inGame = !els.gameView.hidden;
+  const showPersonal = inGame && state && !state.empty && state.locked;
+  const ms = showPersonal ? state.unlockAt - Date.now() : msUntilGlobalReset();
+  els.resetCountdown.textContent = formatCountdown(ms);
 }
 
 function updateStreakLine() {
@@ -489,7 +501,7 @@ function render() {
 
 function persist() {
   localStorage.setItem(
-    dailyKey(state.gameMode),
+    dailyKey(state.gameMode, state.day),
     JSON.stringify({ guesses: state.guesses, finished: state.finished, won: state.won })
   );
 }
@@ -497,18 +509,21 @@ function persist() {
 function loadState(gameMode) {
   const pool = answerPool(gameMode);
   if (pool.length === 0) {
-    state = { gameMode, answer: null, guesses: [], finished: false, won: false, empty: true };
+    state = { gameMode, answer: null, guesses: [], finished: false, won: false, empty: true, day: null, locked: false, unlockAt: null };
     render();
     return;
   }
 
-  const answer = pool[dayIndexSeed(SEED_OFFSETS[gameMode], pool.length)];
-  const saved = localStorage.getItem(dailyKey(gameMode));
+  const lock = getModeLock(gameMode);
+  const locked = !!lock && Date.now() < lock.unlockAt;
+  const day = locked ? lock.day : globalDayIndex();
+  const answer = pool[seedForDay(day, SEED_OFFSETS[gameMode], pool.length)];
+  const saved = localStorage.getItem(dailyKey(gameMode, day));
   if (saved) {
     const parsed = JSON.parse(saved);
-    state = { gameMode, answer, guesses: parsed.guesses, finished: parsed.finished, won: parsed.won, empty: false };
+    state = { gameMode, answer, guesses: parsed.guesses, finished: parsed.finished, won: parsed.won, empty: false, day, locked, unlockAt: locked ? lock.unlockAt : null };
   } else {
-    state = { gameMode, answer, guesses: [], finished: false, won: false, empty: false };
+    state = { gameMode, answer, guesses: [], finished: false, won: false, empty: false, day, locked, unlockAt: locked ? lock.unlockAt : null };
   }
   render();
 }
@@ -520,12 +535,10 @@ function refresh() {
 function renderModeStatuses() {
   document.querySelectorAll("[data-status-for]").forEach((el) => {
     const mode = el.dataset.statusFor;
-    const raw = localStorage.getItem(dailyKey(mode));
+    const lock = getModeLock(mode);
     el.className = "mode-item-status";
     el.innerHTML = "";
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (!parsed.finished) return;
+    if (!lock || Date.now() >= lock.unlockAt) return;
     el.classList.add("status-won");
     el.innerHTML = iconMarkup("check");
   });
@@ -574,10 +587,14 @@ function submitGuess(rawName) {
     state.finished = true;
     state.won = true;
     els.input.disabled = true;
+    setModeLock(state.gameMode, state.day);
+    state.locked = true;
+    state.unlockAt = getModeLock(state.gameMode).unlockAt;
     updateStats(true, state.guesses.length);
     recordGlobalWin();
     updateResultBanner();
     updateStreakLine();
+    updateResetTimer();
     launchConfetti();
     scrollToResult();
   }
@@ -772,20 +789,22 @@ function launchConfetti() {
 
 /* ---------- boot ---------- */
 
-let lastKnownDay = daysSinceEpoch();
+let lastKnownDay = globalDayIndex();
 
 function tickResetTimer() {
   updateResetTimer();
-  const day = daysSinceEpoch();
-  if (day !== lastKnownDay) {
-    lastKnownDay = day;
-    if (els.modeSelect.hidden) {
-      refresh();
-    } else {
-      updateDayNumber();
-      updateStreakLine();
-      renderModeStatuses();
-    }
+  const day = globalDayIndex();
+  const dayChanged = day !== lastKnownDay;
+  if (dayChanged) lastKnownDay = day;
+
+  const inGame = els.modeSelect.hidden;
+  if (inGame) {
+    const lockExpired = state && !state.empty && state.locked && Date.now() >= state.unlockAt;
+    if (lockExpired || (dayChanged && state && !state.locked)) refresh();
+  } else if (dayChanged) {
+    updateDayNumber();
+    updateStreakLine();
+    renderModeStatuses();
   }
 }
 
