@@ -7,7 +7,9 @@ const els = {
   simpleBoard: document.getElementById("simpleBoard"),
   legend: document.getElementById("legend"),
   classicHints: document.getElementById("classicHints"),
+  hintTile1: document.getElementById("hintTile1"),
   hint1Value: document.getElementById("hint1Value"),
+  hintTile2: document.getElementById("hintTile2"),
   hint2Value: document.getElementById("hint2Value"),
   quoteClue: document.getElementById("quoteClue"),
   quoteText: document.getElementById("quoteText"),
@@ -322,20 +324,19 @@ function renderClassicHints() {
   const aliasUnlocked = state.finished || guesses >= CLASSIC_HINT_THRESHOLDS.alias;
   const portraitUnlocked = state.finished || guesses >= CLASSIC_HINT_THRESHOLDS.portrait;
 
+  els.hintTile1.classList.toggle("unlocked", aliasUnlocked);
+  els.hintTile1.classList.toggle("locked", !aliasUnlocked);
   els.hint1Value.textContent = aliasUnlocked
-    ? `Known as "${state.answer.alias}"`
-    : `🔒 Unlocks after ${CLASSIC_HINT_THRESHOLDS.alias} guesses`;
-  els.hint1Value.classList.toggle("unlocked", aliasUnlocked);
+    ? `"${state.answer.alias}"`
+    : `🔒 ${CLASSIC_HINT_THRESHOLDS.alias} guesses`;
 
+  els.hintTile2.classList.toggle("unlocked", portraitUnlocked);
+  els.hintTile2.classList.toggle("locked", !portraitUnlocked);
   els.hint2Value.innerHTML = "";
-  els.hint2Value.classList.toggle("unlocked", portraitUnlocked);
   if (portraitUnlocked) {
-    els.hint2Value.appendChild(buildAvatar(state.answer, 48));
-    const span = document.createElement("span");
-    span.textContent = "That's them.";
-    els.hint2Value.appendChild(span);
+    els.hint2Value.appendChild(buildAvatar(state.answer, 56));
   } else {
-    els.hint2Value.textContent = `🔒 Unlocks after ${CLASSIC_HINT_THRESHOLDS.portrait} guesses`;
+    els.hint2Value.textContent = `🔒 ${CLASSIC_HINT_THRESHOLDS.portrait} guesses`;
   }
 }
 

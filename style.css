@@ -248,47 +248,70 @@ h1::before {
   letter-spacing: 0.05em;
 }
 
-.hints-card {
+.hint-tiles {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+
+.hint-tile {
+  flex: 1;
+  max-width: 180px;
+  background: var(--panel-2);
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 16px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  text-align: left;
-}
-
-.hint-row {
-  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
 }
 
-.hint-tag {
-  flex-shrink: 0;
-  width: 58px;
+.hint-icon {
+  font-size: 1.9rem;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.hint-tile.unlocked .hint-icon {
+  filter: none;
+  opacity: 1;
+}
+
+.hint-title {
   font-family: var(--display-font);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.hint-value {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-  color: var(--muted);
+.hint-tile.unlocked .hint-title {
+  color: var(--accent-2);
 }
 
-.hint-value.unlocked {
+.hint-body {
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-height: 1.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.hint-tile.unlocked .hint-body {
   color: var(--text);
   font-weight: 700;
 }
 
-.hint-value .avatar {
-  width: 48px;
-  height: 48px;
-  font-size: 1rem;
+.hint-body .avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 1.1rem;
 }
 
 .emoji-clue {
