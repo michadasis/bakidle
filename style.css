@@ -29,10 +29,10 @@ body {
   background-color: var(--bg);
   background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1.5px),
     radial-gradient(circle at top, #201616 0%, transparent 60%),
-    linear-gradient(rgba(9, 7, 7, 0.55), rgba(7, 5, 5, 0.72)),
+    linear-gradient(rgba(9, 7, 7, 0.9), rgba(7, 5, 5, 0.94)),
     url("https://cdn.myanimelist.net/images/anime/1979/93135l.jpg");
-  background-size: 6px 6px, 100% 100%, 100% 100%, contain;
-  background-position: center, center, center, top center;
+  background-size: 6px 6px, 100% 100%, 100% 100%, cover;
+  background-position: center, center, center, center;
   background-repeat: repeat, no-repeat, no-repeat, no-repeat;
   background-attachment: fixed, fixed, fixed, fixed;
   color: var(--text);
