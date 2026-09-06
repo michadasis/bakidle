@@ -1,3 +1,19 @@
+/* ---------- icons (Lucide, inlined) ---------- */
+
+const ICON_PATHS = {
+  tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />',
+  image: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />',
+  play: '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />',
+  check: '<path d="M20 6 9 17l-5-5" />',
+  x: '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',
+  flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />',
+};
+
+function iconMarkup(name) {
+  return `<svg class="icon icon-${name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name]}</svg>`;
+}
+
 const els = {
   searchWrap: document.getElementById("searchWrap"),
   input: document.getElementById("guessInput"),
@@ -260,7 +276,7 @@ function addSimpleRow(guessChar) {
   li.appendChild(nameSpan);
   const icon = document.createElement("span");
   icon.className = "simple-icon";
-  icon.textContent = correct ? "✔" : "✘";
+  icon.innerHTML = iconMarkup(correct ? "check" : "x");
   li.appendChild(icon);
   els.simpleBoard.prepend(li);
 }
@@ -281,7 +297,7 @@ function renderEmojiClue() {
   const total = state.answer.emoji.length;
   const revealed = state.finished ? total : Math.min(total, 1 + state.guesses.length);
   els.emojiText.innerHTML = state.answer.emoji
-    .map((e, i) => `<span class="emoji-slot${i < revealed ? "" : " locked"}">${i < revealed ? e : "❓"}</span>`)
+    .map((e, i) => `<span class="emoji-slot${i < revealed ? "" : " locked"}">${i < revealed ? e : iconMarkup("lock")}</span>`)
     .join(" ");
   els.emojiHint.textContent = state.finished ? "" : `${revealed}/${total} revealed — a wrong guess reveals another`;
 }
@@ -310,7 +326,7 @@ function renderVoiceClue() {
     const unlocked = i < revealed;
     btn.type = "button";
     btn.className = `voice-clip-btn${unlocked ? "" : " locked"}`;
-    btn.textContent = unlocked ? "▶" : "🔒";
+    btn.innerHTML = iconMarkup(unlocked ? "play" : "lock");
     btn.title = `Clip ${i + 1}`;
     btn.disabled = !unlocked;
     if (unlocked) btn.addEventListener("click", () => playVoiceClip(src));
@@ -326,9 +342,9 @@ function renderClassicHints() {
 
   els.hintTile1.classList.toggle("unlocked", aliasUnlocked);
   els.hintTile1.classList.toggle("locked", !aliasUnlocked);
-  els.hint1Value.textContent = aliasUnlocked
+  els.hint1Value.innerHTML = aliasUnlocked
     ? `"${state.answer.alias}"`
-    : `🔒 ${CLASSIC_HINT_THRESHOLDS.alias} guesses`;
+    : `${iconMarkup("lock")} ${CLASSIC_HINT_THRESHOLDS.alias} guesses`;
 
   els.hintTile2.classList.toggle("unlocked", portraitUnlocked);
   els.hintTile2.classList.toggle("locked", !portraitUnlocked);
@@ -336,7 +352,7 @@ function renderClassicHints() {
   if (portraitUnlocked) {
     els.hint2Value.appendChild(buildAvatar(state.answer, 56));
   } else {
-    els.hint2Value.textContent = `🔒 ${CLASSIC_HINT_THRESHOLDS.portrait} guesses`;
+    els.hint2Value.innerHTML = `${iconMarkup("lock")} ${CLASSIC_HINT_THRESHOLDS.portrait} guesses`;
   }
 }
 
@@ -369,7 +385,7 @@ function updateResultBanner() {
   const g = loadGlobalStreak();
   els.winStreakLine.innerHTML =
     g.currentStreak > 0
-      ? `<span class="streak-badge"><span class="flame">🔥</span><span class="streak-count">${g.currentStreak}</span></span>`
+      ? `<span class="streak-badge"><span class="flame">${iconMarkup("flame")}</span><span class="streak-count">${g.currentStreak}</span></span>`
       : "";
 }
 

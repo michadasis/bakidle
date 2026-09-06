@@ -42,8 +42,12 @@
 </head>
 <body>
   <div class="icon-row">
-    <button id="infoBtn" class="icon-btn" title="How to play" aria-label="How to play">?</button>
-    <button id="statsBtn" class="icon-btn" title="Statistics" aria-label="Statistics">📊</button>
+    <button id="infoBtn" class="icon-btn" title="How to play" aria-label="How to play">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+    </button>
+    <button id="statsBtn" class="icon-btn" title="Statistics" aria-label="Statistics">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" /></svg>
+    </button>
   </div>
 
   <header>
@@ -51,7 +55,7 @@
     <p class="subtitle">Guess the Baki character</p>
     <div id="dayNumber" class="day-number"></div>
     <div id="streakLine" class="streak-badge" hidden>
-      <span class="flame">🔥</span>
+      <span class="flame"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></svg></span>
       <span id="streakCount" class="streak-count"></span>
       <span class="streak-label"></span>
     </div>
@@ -68,12 +72,12 @@
   <div id="classicHints" class="clue-card hints-card" hidden>
     <div class="hint-tiles">
       <div id="hintTile1" class="hint-tile locked">
-        <div class="hint-icon">🏷️</div>
+        <div class="hint-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg></div>
         <div class="hint-title">Nickname</div>
         <div id="hint1Value" class="hint-body"></div>
       </div>
       <div id="hintTile2" class="hint-tile locked">
-        <div class="hint-icon">🖼️</div>
+        <div class="hint-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div>
         <div class="hint-title">Portrait</div>
         <div id="hint2Value" class="hint-body"></div>
       </div>

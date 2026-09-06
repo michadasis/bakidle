@@ -51,6 +51,14 @@ body {
   z-index: 30;
 }
 
+.icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
+
 .icon-btn {
   width: 36px;
   height: 36px;
@@ -58,12 +66,15 @@ body {
   border: 2px solid var(--ink);
   background: var(--panel);
   color: var(--text);
-  font-size: 1rem;
-  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.icon-btn .icon {
+  width: 18px;
+  height: 18px;
 }
 
 .icon-btn:hover {
@@ -136,6 +147,7 @@ h1::before {
   display: inline-block;
   font-size: 1.15rem;
   line-height: 1;
+  color: #fff;
   animation: flame-flicker 1.3s ease-in-out infinite;
   filter: drop-shadow(0 0 3px rgba(255, 170, 60, 0.9));
 }
@@ -271,12 +283,12 @@ h1::before {
 .hint-icon {
   font-size: 1.9rem;
   line-height: 1;
-  filter: grayscale(1);
-  opacity: 0.4;
+  color: var(--muted);
+  opacity: 0.5;
 }
 
 .hint-tile.unlocked .hint-icon {
-  filter: none;
+  color: var(--accent-2);
   opacity: 1;
 }
 
@@ -330,8 +342,7 @@ h1::before {
 
 .emoji-display .emoji-slot.locked {
   color: var(--border);
-  filter: grayscale(1);
-  opacity: 0.35;
+  opacity: 0.6;
 }
 
 .emoji-hint {
@@ -377,11 +388,15 @@ h1::before {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  font-size: 1.3rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.voice-clip-btn .icon {
+  width: 22px;
+  height: 22px;
 }
 
 .voice-clip-btn:hover {
