@@ -1,12 +1,15 @@
 #!/usr/bin/env node
-// Clip mode tooling for Bakidle.
+// Voice Lines clip tooling for Bakidle.
 //
 //   node tools/clips.mjs init [manifest]     scaffold a manifest listing every character
 //   node tools/clips.mjs batch [manifest]    cut every clip in the manifest, then sync
-//   node tools/clips.mjs cut <input> <start> <len> "<character>"
-//   node tools/clips.mjs sync                rewrite data.js clip paths from clips/
+//   node tools/clips.mjs cut <input> <start> <len> "<character>" [index]
+//   node tools/clips.mjs sync                rewrite data.js voiceClips from clips/
 //
 // Sources are media files on your own disk. This tool never downloads anything.
+//
+// Naming: the first clip for a character is clips/<slug>.mp3, and any further ones are
+// clips/<slug>-2.mp3, -3.mp3 and so on. sync accepts either form.
 
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from "node:fs";
@@ -17,14 +20,25 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CLIP_DIR = join(ROOT, "clips");
 const DATA_FILE = join(ROOT, "data.js");
 const DEFAULT_MANIFEST = join(ROOT, "clips.manifest.json");
-const CLIP_EXTS = [".mp4", ".webm"];
-
-// The clip is blurred for most of the round, so detail above this is bytes nobody sees.
-const WIDTH = 640;
-const HEIGHT = 360;
+const CLIP_EXTS = [".mp3", ".ogg", ".wav", ".m4a"];
 
 function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function clipName(slug, index) {
+  return Number(index) <= 1 ? `${slug}.mp3` : `${slug}-${index}.mp3`;
+}
+
+// "baki-hanma.mp3" -> baki-hanma #1;  "yujiro-hanma-2.mp3" -> yujiro-hanma #2.
+// Only a trailing -<digits> counts, so "mohammad-alai-jr" and "nomi-no-sukune-ii" stay
+// whole rather than being split on their last segment.
+function parseClipFile(file) {
+  const ext = CLIP_EXTS.find((e) => file.toLowerCase().endsWith(e));
+  if (!ext) return null;
+  const stem = file.slice(0, -ext.length);
+  const m = stem.match(/^(.*?)-(\d+)$/);
+  return m ? { slug: m[1], index: Number(m[2]) } : { slug: stem, index: 1 };
 }
 
 function characterNames() {
@@ -55,19 +69,16 @@ function objectSliceEnd(src, start) {
   throw new Error(`unterminated object literal at offset ${start}`);
 }
 
-// Center-crop to 16:9 at a small size, H.264 + AAC so every browser can play it.
-// yuv420p and faststart are what make it work in browsers rather than just in VLC.
-function cutOne(input, start, len, name) {
+// Trim, normalize loudness, downmix to mono mp3. Short spoken clips do not need stereo
+// or a high bitrate, and the whole clips/ folder ships with the site.
+function cutOne(input, start, len, name, index) {
   mkdirSync(CLIP_DIR, { recursive: true });
-  const out = join(CLIP_DIR, `${slugify(name)}.mp4`);
+  const out = join(CLIP_DIR, clipName(slugify(name), index));
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error",
     "-ss", String(start), "-t", String(len), "-i", input,
-    "-vf", `scale=${WIDTH}:${HEIGHT}:force_original_aspect_ratio=increase,crop=${WIDTH}:${HEIGHT}`,
-    "-c:v", "libx264", "-preset", "veryfast", "-crf", "30", "-pix_fmt", "yuv420p", "-profile:v", "main",
-    "-c:a", "aac", "-b:a", "96k", "-ac", "2",
-    "-movflags", "+faststart",
-    out,
+    "-vn", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+    "-ar", "44100", "-ac", "1", "-b:a", "96k", "-f", "mp3", out,
   ], { stdio: ["ignore", "ignore", "pipe"] });
   return out;
 }
@@ -77,9 +88,9 @@ function ffmpegError(err) {
 }
 
 function cut(argv) {
-  const [input, start, len, character] = argv;
+  const [input, start, len, character, index = "1"] = argv;
   if (!input || !start || !len || !character) {
-    console.error('usage: node tools/clips.mjs cut <input> <start> <len> "<character>"');
+    console.error('usage: node tools/clips.mjs cut <input> <start> <len> "<character>" [index]');
     process.exit(1);
   }
   if (!existsSync(input)) {
@@ -92,7 +103,7 @@ function cut(argv) {
     process.exit(1);
   }
   try {
-    console.log(`wrote ${cutOne(input, start, len, match)}`);
+    console.log(`wrote ${cutOne(input, start, len, match, index)}`);
   } catch (err) {
     console.error(ffmpegError(err));
     process.exit(1);
@@ -108,13 +119,13 @@ function init(argv) {
   }
   const manifest = {
     _readme: [
-      "Point 'sources' at video files on your own disk, then give each character a start",
-      "time ('at', hh:mm:ss(.ms) or seconds) and a length in seconds ('len').",
-      "Keep clips short -- 2 to 3 seconds is plenty. One clip per character.",
+      "Point 'sources' at media files on your own disk, then give each clip a start time",
+      "('at', hh:mm:ss(.ms) or seconds) and a length in seconds ('len'). Keep clips short.",
+      "Repeat a character to give them more than one clip; they unlock in listed order.",
       "Delete the rows you don't want. Then: node tools/clips.mjs batch",
     ],
     sources: { ep1: "D:/path/to/your/episode.mkv" },
-    clips: characterNames().map((character) => ({ character, source: "ep1", at: "00:00:00", len: 3 })),
+    clips: characterNames().map((character) => ({ character, source: "ep1", at: "00:00:00", len: 2.5 })),
   };
   writeFileSync(file, JSON.stringify(manifest, null, 2) + "\n");
   console.log(`wrote ${file} — ${manifest.clips.length} rows, one per character`);
@@ -144,7 +155,7 @@ function batch(argv) {
   }
 
   const names = characterNames();
-  const done = new Set();
+  const counters = new Map();
   let made = 0;
   const problems = [];
 
@@ -153,10 +164,6 @@ function batch(argv) {
     const match = resolveCharacter(names, row.character || "");
     if (!match) {
       problems.push(`${where}: not a character in data.js`);
-      continue;
-    }
-    if (done.has(match)) {
-      problems.push(`${where}: ${match} already has a clip from an earlier row — only one per character`);
       continue;
     }
     const input = sources[row.source] || row.source;
@@ -169,12 +176,14 @@ function batch(argv) {
       continue;
     }
 
+    const index = (counters.get(match) || 0) + 1;
+    counters.set(match, index);
     try {
-      cutOne(input, row.at, row.len, match);
-      done.add(match);
+      cutOne(input, row.at, row.len, match, index);
       made++;
-      console.log(`${match} <- ${row.at} +${row.len}s`);
+      console.log(`${match} clip ${index} <- ${row.at} +${row.len}s`);
     } catch (err) {
+      counters.set(match, index - 1);
       problems.push(`${where}: ${ffmpegError(err)}`);
     }
   }
@@ -191,9 +200,10 @@ function sync() {
   const bySlug = new Map();
   if (existsSync(CLIP_DIR)) {
     for (const file of readdirSync(CLIP_DIR)) {
-      const ext = CLIP_EXTS.find((e) => file.toLowerCase().endsWith(e));
-      if (!ext) continue;
-      bySlug.set(file.slice(0, -ext.length), `clips/${file}`);
+      const parsed = parseClipFile(file);
+      if (!parsed) continue;
+      if (!bySlug.has(parsed.slug)) bySlug.set(parsed.slug, []);
+      bySlug.get(parsed.slug).push({ n: parsed.index, path: `clips/${file}` });
     }
   }
 
@@ -205,7 +215,7 @@ function sync() {
 
   for (const name of names) {
     const slug = slugify(name);
-    const clip = bySlug.get(slug) || "";
+    const clips = (bySlug.get(slug) || []).sort((a, b) => a.n - b.n).map((c) => c.path);
     seen.add(slug);
 
     const anchor = src.indexOf(`{ name: "${name}",`);
@@ -216,28 +226,29 @@ function sync() {
     const end = objectSliceEnd(src, anchor);
     const block = src.slice(anchor, end);
 
+    const list = clips.map((p) => `"${p}"`).join(", ");
     // Anchored to a line start via lookbehind so it can't latch onto the tail of some
     // other key, and so it never consumes the *previous* line's \r -- doing that in a
     // CRLF file leaves a bare \n behind and add/remove cycles mangle the line endings.
-    const existing = block.match(/(?<=[\r\n])[ \t]*clip:\s*"[^"]*",?(\r?\n)?/);
+    const existing = block.match(/(?<=[\r\n])[ \t]*voiceClips:\s*\[[^\]]*\],?(\r?\n)?/);
     let next;
 
-    if (!clip) {
+    if (clips.length === 0) {
       if (!existing) continue;
       next = block.replace(existing[0], "");
     } else if (existing) {
-      next = block.replace(existing[0], `    clip: "${clip}",${existing[1] || ""}`);
+      next = block.replace(existing[0], `    voiceClips: [${list}],${existing[1] || ""}`);
     } else {
       const image = block.search(/\r?\n[ \t]*image:/);
       next = image === -1
-        ? block.replace(/\s*\}$/, `,${EOL}    clip: "${clip}" }`)
-        : block.slice(0, image) + `${EOL}    clip: "${clip}",` + block.slice(image);
+        ? block.replace(/\s*\}$/, `,${EOL}    voiceClips: [${list}] }`)
+        : block.slice(0, image) + `${EOL}    voiceClips: [${list}],` + block.slice(image);
     }
 
     if (next !== block) {
       src = src.slice(0, anchor) + next + src.slice(end);
       changed++;
-      console.log(`${name}: ${clip || "no clip"}`);
+      console.log(`${name}: ${clips.length} clip${clips.length === 1 ? "" : "s"}`);
     }
   }
 
@@ -273,7 +284,7 @@ else if (command === "sync") sync();
 else {
   console.error("usage: node tools/clips.mjs init [manifest]");
   console.error("       node tools/clips.mjs batch [manifest]");
-  console.error('       node tools/clips.mjs cut <input> <start> <len> "<character>"');
+  console.error('       node tools/clips.mjs cut <input> <start> <len> "<character>" [index]');
   console.error("       node tools/clips.mjs sync");
   process.exit(1);
 }

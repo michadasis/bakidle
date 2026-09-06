@@ -5,6 +5,7 @@ const ICON_PATHS = {
   image: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />',
   lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />',
   play: '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />',
+  stop: '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />',
   check: '<path d="M20 6 9 17l-5-5" />',
   x: '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',
   flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />',
@@ -13,7 +14,6 @@ const ICON_PATHS = {
   smile: '<path d="M15 10V9" /><path d="M16.472 15a6 6 0 01-8.943 0" /><path d="M9 10V9" /><circle cx="12" cy="12" r="10" />',
   palette: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />',
   mic: '<path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" />',
-  film: '<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 3v18" /><path d="M3 7.5h4" /><path d="M3 12h18" /><path d="M3 16.5h4" /><path d="M17 3v18" /><path d="M17 7.5h4" /><path d="M17 16.5h4" />',
   chevronRight: '<path d="m9 18 6-6-6-6" />',
   chevronLeft: '<path d="m15 18-6-6 6-6" />',
 };
@@ -27,7 +27,7 @@ const GAME_MODES = [
   { id: "quote", label: "Quote", icon: "quote" },
   { id: "emoji", label: "Emoji", icon: "smile" },
   { id: "splash", label: "Splash Art", icon: "palette" },
-  { id: "clip", label: "Clip", icon: "film" },
+  { id: "voice", label: "Voice Lines", icon: "mic" },
 ];
 
 function nextGameMode(mode) {
@@ -60,10 +60,11 @@ const els = {
   splashClue: document.getElementById("splashClue"),
   splashImage: document.getElementById("splashImage"),
   splashHint: document.getElementById("splashHint"),
-  clipClue: document.getElementById("clipClue"),
-  clipVideo: document.getElementById("clipVideo"),
-  clipPlayBtn: document.getElementById("clipPlayBtn"),
-  clipHint: document.getElementById("clipHint"),
+  voiceClue: document.getElementById("voiceClue"),
+  voicePlayBtn: document.getElementById("voicePlayBtn"),
+  voiceProgressFill: document.getElementById("voiceProgressFill"),
+  voiceClips: document.getElementById("voiceClips"),
+  voiceHint: document.getElementById("voiceHint"),
   emptyModeMsg: document.getElementById("emptyModeMsg"),
   statusLine: document.getElementById("statusLine"),
   guessCount: document.getElementById("guessCount"),
@@ -89,11 +90,8 @@ const els = {
 };
 
 const TOLERANCE = { height: 5, weight: 8, age: 5 };
-const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, clip: 23 };
+const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, voice: 23 };
 const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
-// Heavier than the splash curve: motion, silhouette and colour leak through a blur that
-// would completely hide a still portrait.
-const CLIP_BLUR_LEVELS = [28, 20, 14, 9, 5, 2, 0];
 const CLASSIC_HINT_THRESHOLDS = { alias: 3, portrait: 6 };
 
 let activeGameMode = "classic";
@@ -113,7 +111,7 @@ let state = {
 
 function answerPool(mode) {
   if (mode === "splash") return CHARACTERS.filter((c) => c.image);
-  if (mode === "clip") return CHARACTERS.filter((c) => c.clip);
+  if (mode === "voice") return CHARACTERS.filter((c) => Array.isArray(c.voiceClips) && c.voiceClips.length > 0);
   return CHARACTERS;
 }
 
@@ -366,39 +364,138 @@ function renderSplashClue() {
   els.splashHint.textContent = state.finished ? "" : `Guess ${state.guesses.length + 1} — a wrong guess sharpens the image`;
 }
 
-function showClipPlayButton(show) {
-  els.clipPlayBtn.hidden = !show;
+// One transport control drives whichever clip is selected; the numbered chips only
+// choose between clips, so there's never more than one play button on screen.
+// A single reusable element, never one per clip: with one element it is structurally
+// impossible for two clips to sound at once, however the load/pause races fall out.
+let clipAudio = null;
+let playToken = 0;
+let playingIndex = -1;
+let selectedClip = 0;
+
+function voiceClipList() {
+  return (state.answer && state.answer.voiceClips) || [];
+}
+
+function unlockedClipCount() {
+  const total = voiceClipList().length;
+  return state.finished ? total : Math.min(total, 1 + state.guesses.length);
+}
+
+function setClipProgress(fraction) {
+  const pct = Math.max(0, Math.min(1, fraction || 0)) * 100;
+  els.voiceProgressFill.style.width = `${pct}%`;
+}
+
+function paintVoiceUI() {
+  const playing = playingIndex !== -1;
+  els.voicePlayBtn.innerHTML = iconMarkup(playing ? "stop" : "play");
+  els.voicePlayBtn.title = playing ? "Stop" : `Play clip ${selectedClip + 1}`;
+  els.voicePlayBtn.setAttribute("aria-label", els.voicePlayBtn.title);
+  els.voicePlayBtn.classList.toggle("playing", playing);
+  els.voicePlayBtn.disabled = voiceClipList().length === 0;
+
+  [...els.voiceClips.children].forEach((chip, i) => {
+    chip.classList.toggle("selected", i === selectedClip);
+    chip.classList.toggle("playing", i === playingIndex);
+  });
+}
+
+function clipPlayer() {
+  if (clipAudio) return clipAudio;
+  clipAudio = new Audio();
+  clipAudio.addEventListener("timeupdate", () => {
+    if (playingIndex !== -1 && clipAudio.duration) {
+      setClipProgress(clipAudio.currentTime / clipAudio.duration);
+    }
+  });
+  clipAudio.addEventListener("ended", () => stopClip());
+  clipAudio.addEventListener("error", () => {
+    if (playingIndex === -1) return;
+    els.statusLine.textContent = "Couldn't play that clip — check the file exists in clips/.";
+    stopClip();
+  });
+  return clipAudio;
 }
 
 function stopClip() {
-  const v = els.clipVideo;
-  if (!v.dataset.src) return;
-  v.pause();
-  v.currentTime = 0;
-  showClipPlayButton(true);
+  playToken++;
+  if (clipAudio) clipAudio.pause();
+  playingIndex = -1;
+  setClipProgress(0);
+  paintVoiceUI();
 }
 
-function renderClipClue() {
-  const v = els.clipVideo;
-  const src = state.answer.clip || "";
+function playSelectedClip() {
+  const src = voiceClipList()[selectedClip];
+  if (!src) return;
 
-  // Only reload when the source actually changes. render() runs after every guess, and
-  // re-assigning src would restart the clip out from under someone mid-playback.
-  if (v.dataset.src !== src) {
-    v.dataset.src = src;
-    v.src = src;
-    v.load();
-    showClipPlayButton(true);
+  const audio = clipPlayer();
+  audio.pause();
+  // Assigning src reloads the element and resets currentTime, so switching clips
+  // replaces the sound rather than layering a second one over it.
+  audio.src = src;
+
+  const token = ++playToken;
+  playingIndex = selectedClip;
+  setClipProgress(0);
+
+  audio.play().catch(() => {
+    // Switching clips aborts the previous play() promise. That rejection is expected
+    // and must not report an error over the clip that superseded it.
+    if (token !== playToken) return;
+    els.statusLine.textContent = "Couldn't play that clip — check the file exists in clips/.";
+    stopClip();
+  });
+
+  paintVoiceUI();
+}
+
+function selectClip(i) {
+  const wasPlaying = playingIndex !== -1;
+  selectedClip = i;
+  // Switching while playing jumps straight to the new clip; otherwise just re-aim the
+  // play button.
+  if (wasPlaying) {
+    playSelectedClip();
+  } else {
+    setClipProgress(0);
+    paintVoiceUI();
   }
+}
 
-  const level = state.finished
-    ? CLIP_BLUR_LEVELS.length - 1
-    : Math.min(state.guesses.length, CLIP_BLUR_LEVELS.length - 1);
-  v.style.filter = `blur(${CLIP_BLUR_LEVELS[level]}px)`;
+function renderVoiceClue() {
+  const clips = voiceClipList();
+  const unlocked = unlockedClipCount();
+  // A newly locked selection can happen when the mode reloads with fewer guesses.
+  if (selectedClip >= unlocked) selectedClip = Math.max(0, unlocked - 1);
 
-  els.clipHint.textContent = state.finished
+  els.voiceClips.innerHTML = "";
+  clips.forEach((_, i) => {
+    const chip = document.createElement("button");
+    const isUnlocked = i < unlocked;
+    chip.type = "button";
+    chip.className = `voice-chip${isUnlocked ? "" : " locked"}`;
+    chip.disabled = !isUnlocked;
+    if (isUnlocked) {
+      chip.textContent = String(i + 1);
+      chip.title = `Clip ${i + 1}`;
+      chip.addEventListener("click", () => selectClip(i));
+    } else {
+      chip.innerHTML = iconMarkup("lock");
+      chip.title = `Clip ${i + 1} locked`;
+    }
+    els.voiceClips.appendChild(chip);
+  });
+  // Nothing to choose between with a single clip.
+  els.voiceClips.hidden = clips.length <= 1;
+
+  // A guess rebuilds the chips while audio may still be running, so repaint rather than
+  // assume a fresh state.
+  paintVoiceUI();
+  els.voiceHint.textContent = state.finished
     ? ""
-    : `Guess ${state.guesses.length + 1} — a wrong guess sharpens the clip`;
+    : `${unlocked}/${clips.length} clips unlocked — a wrong guess unlocks another`;
 }
 
 function renderClassicHints() {
@@ -427,7 +524,7 @@ function renderClue() {
   els.quoteClue.hidden = state.gameMode !== "quote";
   els.emojiClue.hidden = state.gameMode !== "emoji";
   els.splashClue.hidden = state.gameMode !== "splash";
-  els.clipClue.hidden = state.gameMode !== "clip";
+  els.voiceClue.hidden = state.gameMode !== "voice";
   if (state.gameMode === "classic") renderClassicHints();
   if (state.gameMode === "quote") {
     els.quoteText.textContent = state.answer.quote;
@@ -435,7 +532,7 @@ function renderClue() {
   }
   if (state.gameMode === "emoji") renderEmojiClue();
   if (state.gameMode === "splash") renderSplashClue();
-  if (state.gameMode === "clip") renderClipClue();
+  if (state.gameMode === "voice") renderVoiceClue();
   else stopClip();
 }
 
@@ -484,7 +581,7 @@ function render() {
     els.quoteClue.hidden = true;
     els.emojiClue.hidden = true;
     els.splashClue.hidden = true;
-    els.clipClue.hidden = true;
+    els.voiceClue.hidden = true;
     stopClip();
     els.winBanner.hidden = true;
     return;
@@ -561,7 +658,7 @@ function renderModeStatuses() {
 }
 
 function showModeSelect() {
-  // Hiding the game view doesn't stop the video, and an unmuted clip would keep playing
+  // Hiding the game view doesn't stop playback on its own, and a clip would keep playing
   // audio behind the mode list.
   stopClip();
   els.gameView.hidden = true;
@@ -705,29 +802,11 @@ els.nextModeBtn.addEventListener("click", () => {
   else showModeSelect();
 });
 
-/* ---------- clip player wiring ---------- */
+/* ---------- voice player wiring ---------- */
 
-els.clipPlayBtn.innerHTML = iconMarkup("play");
-els.clipPlayBtn.addEventListener("click", () => {
-  const v = els.clipVideo;
-  // Playing on a click keeps us inside a user gesture, which is what lets the clip run
-  // with sound -- browsers refuse unmuted autoplay without one.
-  v.muted = false;
-  const started = v.play();
-  if (started) {
-    started.catch(() => {
-      els.statusLine.textContent = "Couldn't play that clip — check the file exists in clips/.";
-      showClipPlayButton(true);
-    });
-  }
-});
-els.clipVideo.addEventListener("play", () => showClipPlayButton(false));
-els.clipVideo.addEventListener("pause", () => showClipPlayButton(true));
-els.clipVideo.addEventListener("ended", () => showClipPlayButton(true));
-els.clipVideo.addEventListener("error", () => {
-  if (!els.clipVideo.dataset.src) return;
-  els.statusLine.textContent = "Couldn't load that clip — check the file exists in clips/.";
-  showClipPlayButton(true);
+els.voicePlayBtn.addEventListener("click", () => {
+  if (playingIndex !== -1) stopClip();
+  else playSelectedClip();
 });
 
 /* ---------- stats ---------- */
