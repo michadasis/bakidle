@@ -28,9 +28,13 @@ body {
   min-height: 100vh;
   background-color: var(--bg);
   background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1.5px),
-    radial-gradient(circle at top, #201616 0%, transparent 60%);
-  background-size: 6px 6px, 100% 100%;
-  background-repeat: repeat, no-repeat;
+    radial-gradient(circle at top, #201616 0%, transparent 60%),
+    linear-gradient(rgba(9, 7, 7, 0.55), rgba(7, 5, 5, 0.72)),
+    url("https://cdn.myanimelist.net/images/anime/1979/93135l.jpg");
+  background-size: 6px 6px, 100% 100%, 100% 100%, contain;
+  background-position: center, center, center, top center;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed, fixed;
   color: var(--text);
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   display: flex;
@@ -38,6 +42,13 @@ body {
   align-items: center;
   padding: 24px 12px 60px;
   position: relative;
+}
+
+#gameView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 /* ---------- header ---------- */
@@ -177,43 +188,149 @@ h1::before {
   }
 }
 
-/* ---------- tabs & mode bar ---------- */
+/* ---------- mode select screen ---------- */
 
-.tabs {
+.mode-select {
+  width: min(560px, 94vw);
+  margin-top: 20px;
+}
+
+.mode-list {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mode-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
   background: var(--panel);
   border: 2px solid var(--ink);
-  border-radius: 6px;
-  padding: 4px;
-  max-width: min(640px, 94vw);
-}
-
-.tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  padding: 9px 18px;
-  border-radius: 3px;
+  border-radius: 10px;
+  padding: 14px 16px;
   cursor: pointer;
-  font-family: var(--display-font);
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  transition: all 0.15s ease;
+  text-align: left;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.12s ease;
 }
 
-.tab-btn.active {
+.mode-item:hover {
+  border-color: var(--accent-2);
+  background: var(--panel-2);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mode-item:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mode-item-icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
   background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-item-icon .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.mode-item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mode-item-title {
+  font-family: var(--display-font);
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.mode-item-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.mode-item-status {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-item-status:empty {
+  display: none;
+}
+
+.mode-item-status:not(:empty) {
+  display: flex;
+}
+
+.mode-item-status .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.mode-item-status.status-won {
+  background: var(--green);
   color: #fff;
 }
 
-.tab-btn:hover:not(.active) {
-  color: var(--text);
-  background: var(--panel-2);
+.mode-item-arrow {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.mode-item-arrow .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.mode-item:hover .mode-item-arrow {
+  color: var(--accent-2);
+}
+
+/* ---------- back button ---------- */
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--display-font);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin: 4px 0 12px;
+}
+
+.back-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.back-btn:hover {
+  color: var(--accent-2);
 }
 
 /* ---------- clue cards (quote / emoji / splash / voice modes) ---------- */
@@ -793,6 +910,19 @@ table#board td.wrong {
   text-transform: uppercase;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
   transition: transform 0.1s ease;
+}
+
+.next-mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+}
+
+.next-mode-btn .icon {
+  width: 20px;
+  height: 20px;
 }
 
 .action-row button:hover {

@@ -8,13 +8,36 @@ const ICON_PATHS = {
   check: '<path d="M20 6 9 17l-5-5" />',
   x: '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',
   flame: '<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />',
+  grid: '<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" />',
+  quote: '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />',
+  smile: '<path d="M15 10V9" /><path d="M16.472 15a6 6 0 01-8.943 0" /><path d="M9 10V9" /><circle cx="12" cy="12" r="10" />',
+  palette: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />',
+  mic: '<path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" />',
+  chevronRight: '<path d="m9 18 6-6-6-6" />',
+  chevronLeft: '<path d="m15 18-6-6 6-6" />',
 };
 
 function iconMarkup(name) {
   return `<svg class="icon icon-${name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name]}</svg>`;
 }
 
+const GAME_MODES = [
+  { id: "classic", label: "Classic", icon: "grid" },
+  { id: "quote", label: "Quote", icon: "quote" },
+  { id: "emoji", label: "Emoji", icon: "smile" },
+  { id: "splash", label: "Splash Art", icon: "palette" },
+  { id: "voice", label: "Voice Lines", icon: "mic" },
+];
+
+function nextGameMode(mode) {
+  const idx = GAME_MODES.findIndex((m) => m.id === mode);
+  return GAME_MODES[(idx + 1) % GAME_MODES.length];
+}
+
 const els = {
+  modeSelect: document.getElementById("modeSelect"),
+  gameView: document.getElementById("gameView"),
+  backToModesBtn: document.getElementById("backToModesBtn"),
   searchWrap: document.getElementById("searchWrap"),
   input: document.getElementById("guessInput"),
   suggestions: document.getElementById("suggestions"),
@@ -52,10 +75,7 @@ const els = {
   winAlias: document.getElementById("winAlias"),
   winTries: document.getElementById("winTries"),
   winTriesWord: document.getElementById("winTriesWord"),
-  giveUpRow: document.getElementById("giveUpRow"),
-  giveUpBtn: document.getElementById("giveUpBtn"),
-  shareBtn: document.getElementById("shareBtn"),
-  statsFromWinBtn: document.getElementById("statsFromWinBtn"),
+  nextModeBtn: document.getElementById("nextModeBtn"),
   winStreakLine: document.getElementById("winStreakLine"),
   infoBtn: document.getElementById("infoBtn"),
   statsBtn: document.getElementById("statsBtn"),
@@ -67,7 +87,6 @@ const els = {
 
 const TOLERANCE = { height: 5, weight: 8, age: 5 };
 const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, voice: 23 };
-const EMOJI_MAP = { correct: "🟩", partial: "🟨", wrong: "🟥" };
 const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
 const CLASSIC_HINT_THRESHOLDS = { alias: 3, portrait: 6 };
 const EPOCH = new Date(2026, 8, 6);
@@ -375,7 +394,7 @@ function renderClue() {
 function updateResultBanner() {
   els.winBanner.hidden = !state.finished;
   if (!state.finished) return;
-  els.resultTitle.textContent = state.won ? "Victory!" : "Nice Try!";
+  els.resultTitle.textContent = "Victory!";
   els.resultAvatarWrap.innerHTML = "";
   els.resultAvatarWrap.appendChild(buildAvatar(state.answer, 72));
   els.winAnswer.textContent = state.answer.name;
@@ -387,6 +406,19 @@ function updateResultBanner() {
     g.currentStreak > 0
       ? `<span class="streak-badge"><span class="flame">${iconMarkup("flame")}</span><span class="streak-count">${g.currentStreak}</span></span>`
       : "";
+
+  const next = nextGameMode(state.gameMode);
+  if (answerPool(next.id).length > 0) {
+    els.nextModeBtn.dataset.nextMode = next.id;
+    els.nextModeBtn.innerHTML = `${iconMarkup(next.icon)}<span>${next.label}</span>`;
+  } else {
+    els.nextModeBtn.dataset.nextMode = "";
+    els.nextModeBtn.innerHTML = `${iconMarkup("chevronLeft")}<span>Back to Modes</span>`;
+  }
+}
+
+function scrollToResult() {
+  els.winBanner.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function render() {
@@ -397,7 +429,6 @@ function render() {
   els.legend.hidden = state.empty || state.gameMode !== "classic";
   els.classicBoardWrap.hidden = state.empty || state.gameMode !== "classic";
   els.simpleBoard.hidden = state.empty || state.gameMode === "classic";
-  els.giveUpRow.hidden = state.empty || state.finished;
   els.guessCount.textContent = "";
   if (state.empty) {
     els.classicHints.hidden = true;
@@ -428,7 +459,6 @@ function render() {
   els.input.value = "";
   els.statusLine.textContent = "";
   closeSuggestions();
-  els.giveUpRow.hidden = state.finished;
   updateResultBanner();
   if (!state.finished) els.input.focus();
 }
@@ -465,9 +495,32 @@ function refresh() {
   loadState(activeGameMode);
 }
 
-function setGameMode(mode) {
+function renderModeStatuses() {
+  document.querySelectorAll("[data-status-for]").forEach((el) => {
+    const mode = el.dataset.statusFor;
+    const raw = localStorage.getItem(dailyKey(mode));
+    el.className = "mode-item-status";
+    el.innerHTML = "";
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed.finished) return;
+    el.classList.add("status-won");
+    el.innerHTML = iconMarkup("check");
+  });
+}
+
+function showModeSelect() {
+  els.gameView.hidden = true;
+  els.modeSelect.hidden = false;
+  updateDayNumber();
+  updateStreakLine();
+  renderModeStatuses();
+}
+
+function selectMode(mode) {
   activeGameMode = mode;
-  document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
+  els.modeSelect.hidden = true;
+  els.gameView.hidden = false;
   refresh();
 }
 
@@ -498,12 +551,12 @@ function submitGuess(rawName) {
     state.finished = true;
     state.won = true;
     els.input.disabled = true;
-    els.giveUpRow.hidden = true;
     updateStats(true, state.guesses.length);
     recordGlobalWin();
     updateResultBanner();
     updateStreakLine();
     launchConfetti();
+    scrollToResult();
   }
   renderClue();
   persist();
@@ -582,28 +635,15 @@ document.addEventListener("click", (e) => {
   if (!els.suggestions.contains(e.target) && e.target !== els.input) closeSuggestions();
 });
 
-/* ---------- give up ---------- */
+/* ---------- mode select wiring ---------- */
 
-els.giveUpBtn.addEventListener("click", () => {
-  if (state.finished || state.empty) return;
-  state.finished = true;
-  state.won = false;
-  state.guesses.push(state.answer.name);
-  if (state.gameMode === "classic") addClassicRow(state.answer);
-  else addSimpleRow(state.answer);
-  els.input.disabled = true;
-  els.giveUpRow.hidden = true;
-  updateStats(false, state.guesses.length);
-  updateResultBanner();
-  renderClue();
-  updateStreakLine();
-  persist();
+document.querySelectorAll(".mode-item").forEach((btn) => {
+  btn.addEventListener("click", () => selectMode(btn.dataset.mode));
 });
-
-/* ---------- tabs wiring ---------- */
-
-document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => setGameMode(btn.dataset.mode));
+els.backToModesBtn.addEventListener("click", showModeSelect);
+els.nextModeBtn.addEventListener("click", () => {
+  if (els.nextModeBtn.dataset.nextMode) selectMode(els.nextModeBtn.dataset.nextMode);
+  else showModeSelect();
 });
 
 /* ---------- stats ---------- */
@@ -661,40 +701,6 @@ function renderStatsModal() {
   `;
 }
 
-/* ---------- share ---------- */
-
-function buildShareText() {
-  const dayNum = daysSinceEpoch() + 1;
-  const modeLabel = capitalize(activeGameMode);
-  const triesLabel = state.won ? state.guesses.length : "X";
-  let lines;
-  if (activeGameMode === "classic") {
-    const order = ["gender", "origin", "styles", "saga", "height", "weight", "age", "status"];
-    lines = state.guesses.map((name) => {
-      const c = CHARACTERS.find((x) => x.name === name);
-      const cmp = computeComparisons(c, state.answer);
-      return order.map((k) => EMOJI_MAP[cmp[k].cls]).join("");
-    });
-  } else {
-    lines = state.guesses.map((name) => (name === state.answer.name ? "🟩" : "🟥"));
-  }
-  return `Bakidle #${dayNum} [${modeLabel}] ${triesLabel}/∞\n\n${lines.join("\n")}`;
-}
-
-els.shareBtn.addEventListener("click", async () => {
-  const text = buildShareText();
-  try {
-    await navigator.clipboard.writeText(text);
-    const original = els.shareBtn.textContent;
-    els.shareBtn.textContent = "Copied!";
-    setTimeout(() => {
-      els.shareBtn.textContent = original;
-    }, 1500);
-  } catch {
-    els.statusLine.textContent = "Could not copy — clipboard blocked.";
-  }
-});
-
 /* ---------- modals ---------- */
 
 function openModal(el) {
@@ -706,10 +712,6 @@ function closeModal(el) {
 
 els.infoBtn.addEventListener("click", () => openModal(els.infoModal));
 els.statsBtn.addEventListener("click", () => {
-  renderStatsModal();
-  openModal(els.statsModal);
-});
-els.statsFromWinBtn.addEventListener("click", () => {
   renderStatsModal();
   openModal(els.statsModal);
 });
@@ -747,4 +749,4 @@ function launchConfetti() {
 
 /* ---------- boot ---------- */
 
-refresh();
+showModeSelect();
