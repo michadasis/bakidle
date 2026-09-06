@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bakidle — Daily Baki Character Guessing Game</title>
-  <meta name="description" content="Guess the daily Baki Hanma character in five modes: Classic stats grid, Quote, Emoji, Splash Art, and Voice Lines. A free daily browser game for fans of Baki the Grappler and Baki Hanma." />
+  <meta name="description" content="Guess the daily Baki Hanma character in five modes: Classic stats grid, Quote, Emoji, Splash Art, and Clip. A free daily browser game for fans of Baki the Grappler and Baki Hanma." />
   <meta name="keywords" content="Bakidle, Baki, Baki Hanma, Baki the Grappler, Baki quiz, Baki game, daily character guessing game, wordle, dle game" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0a0a0a" />
@@ -13,12 +13,12 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Bakidle" />
   <meta property="og:title" content="Bakidle — Daily Baki Character Guessing Game" />
-  <meta property="og:description" content="Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Voice Lines." />
+  <meta property="og:description" content="Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Clip." />
   <meta property="og:url" content="https://bakidle.vercel.app/" />
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Bakidle — Daily Baki Character Guessing Game" />
-  <meta name="twitter:description" content="Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Voice Lines." />
+  <meta name="twitter:description" content="Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Clip." />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230f0b0b'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23d0342c' stroke-width='4'/%3E%3Ctext x='50' y='68' font-size='58' font-family='Arial Black,Arial,sans-serif' font-weight='900' fill='%23ff5a4e' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,7 +31,7 @@
     "@type": "WebApplication",
     "name": "Bakidle",
     "url": "https://bakidle.vercel.app/",
-    "description": "Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Voice Lines.",
+    "description": "Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Clip.",
     "applicationCategory": "Game",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
@@ -98,13 +98,13 @@
         <span class="mode-item-status" data-status-for="splash"></span>
         <span class="mode-item-arrow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></span>
       </button>
-      <button class="mode-item" data-mode="voice">
-        <span class="mode-item-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></svg></span>
+      <button class="mode-item" data-mode="clip">
+        <span class="mode-item-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 3v18" /><path d="M3 7.5h4" /><path d="M3 12h18" /><path d="M3 16.5h4" /><path d="M17 3v18" /><path d="M17 7.5h4" /><path d="M17 16.5h4" /></svg></span>
         <span class="mode-item-text">
-          <span class="mode-item-title">Voice Lines</span>
-          <span class="mode-item-desc">Guess from an audio clip</span>
+          <span class="mode-item-title">Clip</span>
+          <span class="mode-item-desc">Guess from a blurred clip</span>
         </span>
-        <span class="mode-item-status" data-status-for="voice"></span>
+        <span class="mode-item-status" data-status-for="clip"></span>
         <span class="mode-item-arrow"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></span>
       </button>
     </div>
@@ -148,13 +148,16 @@
     <div id="splashHint" class="emoji-hint"></div>
   </div>
 
-  <div id="voiceClue" class="clue-card voice-clue" hidden>
-    <div id="voiceClips" class="voice-clips"></div>
-    <div id="voiceHint" class="emoji-hint"></div>
+  <div id="clipClue" class="clue-card clip-clue" hidden>
+    <div class="clip-frame">
+      <video id="clipVideo" class="clip-video" playsinline preload="metadata"></video>
+      <button id="clipPlayBtn" class="clip-play-btn" type="button" aria-label="Play clip"></button>
+    </div>
+    <div id="clipHint" class="emoji-hint"></div>
   </div>
 
   <div id="emptyModeMsg" class="clue-card empty-mode-msg" hidden>
-    <p>No voice clips yet.</p>
+    <p>No clips yet.</p>
   </div>
 
   <div id="searchWrap" class="search-wrap">
@@ -231,8 +234,8 @@
         another emoji.</p>
       <p><strong>Splash Art</strong> &mdash; guess the character from their heavily blurred portrait.
         A wrong guess sharpens the image.</p>
-      <p><strong>Voice Lines</strong> &mdash; guess the character from a short audio clip. A wrong
-        guess unlocks another clip.</p>
+      <p><strong>Clip</strong> &mdash; press play to watch a short, heavily blurred scene with its
+        audio. A wrong guess sharpens the picture.</p>
       <p>Each mode has its own daily puzzle &mdash; same answer for everyone, resets at local
         midnight, progress saved automatically. Win to keep your streak alive.</p>
     </div>
