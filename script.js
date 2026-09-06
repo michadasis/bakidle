@@ -66,6 +66,7 @@ const els = {
   statusLine: document.getElementById("statusLine"),
   guessCount: document.getElementById("guessCount"),
   dayNumber: document.getElementById("dayNumber"),
+  resetCountdown: document.getElementById("resetCountdown"),
   streakLine: document.getElementById("streakLine"),
   streakCount: document.getElementById("streakCount"),
   winBanner: document.getElementById("winBanner"),
@@ -89,7 +90,6 @@ const TOLERANCE = { height: 5, weight: 8, age: 5 };
 const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, voice: 23 };
 const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
 const CLASSIC_HINT_THRESHOLDS = { alias: 3, portrait: 6 };
-const EPOCH = new Date(2026, 8, 6);
 
 let activeGameMode = "classic";
 let highlightedIndex = -1;
@@ -109,16 +109,25 @@ function answerPool(mode) {
   return CHARACTERS;
 }
 
-/* ---------- date / seeding ---------- */
+/* ---------- date / seeding (per-user rolling day, anchored to first visit) ---------- */
 
-function daysSinceEpoch() {
-  const now = new Date();
-  return Math.floor((now.setHours(0, 0, 0, 0) - new Date(EPOCH).setHours(0, 0, 0, 0)) / 86400000);
+const USER_EPOCH_KEY = "bakidle_user_epoch";
+
+function getUserEpoch() {
+  let epoch = Number(localStorage.getItem(USER_EPOCH_KEY));
+  if (!epoch) {
+    epoch = Date.now();
+    localStorage.setItem(USER_EPOCH_KEY, String(epoch));
+  }
+  return epoch;
 }
 
-function todayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+function daysSinceEpoch() {
+  return Math.floor((Date.now() - getUserEpoch()) / 86400000);
+}
+
+function msUntilNextReset() {
+  return 86400000 - ((Date.now() - getUserEpoch()) % 86400000);
 }
 
 function hashSeed(n) {
@@ -135,7 +144,7 @@ function dayIndexSeed(offset, poolSize) {
 }
 
 function dailyKey(mode) {
-  return `bakidle_daily_${mode}_${todayKey()}`;
+  return `bakidle_daily_${mode}_${daysSinceEpoch()}`;
 }
 
 /* ---------- global streak (spans all game modes) ---------- */
@@ -306,6 +315,18 @@ function updateDayNumber() {
   els.dayNumber.textContent = `Daily #${daysSinceEpoch() + 1}`;
 }
 
+function formatCountdown(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const s = String(totalSeconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
+function updateResetTimer() {
+  els.resetCountdown.textContent = formatCountdown(msUntilNextReset());
+}
+
 function updateStreakLine() {
   const g = loadGlobalStreak();
   els.streakLine.hidden = g.currentStreak <= 0;
@@ -423,6 +444,7 @@ function scrollToResult() {
 
 function render() {
   updateDayNumber();
+  updateResetTimer();
   updateStreakLine();
   els.emptyModeMsg.hidden = !state.empty;
   els.searchWrap.hidden = state.empty;
@@ -513,6 +535,7 @@ function showModeSelect() {
   els.gameView.hidden = true;
   els.modeSelect.hidden = false;
   updateDayNumber();
+  updateResetTimer();
   updateStreakLine();
   renderModeStatuses();
 }
@@ -748,5 +771,24 @@ function launchConfetti() {
 }
 
 /* ---------- boot ---------- */
+
+let lastKnownDay = daysSinceEpoch();
+
+function tickResetTimer() {
+  updateResetTimer();
+  const day = daysSinceEpoch();
+  if (day !== lastKnownDay) {
+    lastKnownDay = day;
+    if (els.modeSelect.hidden) {
+      refresh();
+    } else {
+      updateDayNumber();
+      updateStreakLine();
+      renderModeStatuses();
+    }
+  }
+}
+
+setInterval(tickResetTimer, 1000);
 
 showModeSelect();

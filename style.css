@@ -142,6 +142,19 @@ h1::before {
   letter-spacing: 0.05em;
 }
 
+.reset-timer {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+
+.reset-timer #resetCountdown {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
 .streak-badge {
   display: inline-flex;
   align-items: center;
