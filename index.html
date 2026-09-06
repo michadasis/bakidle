@@ -65,6 +65,17 @@
     <button class="tab-btn" data-mode="voice">Voice Lines</button>
   </div>
 
+  <div id="classicHints" class="clue-card hints-card" hidden>
+    <div class="hint-row">
+      <span class="hint-tag">Hint 1</span>
+      <span id="hint1Value" class="hint-value"></span>
+    </div>
+    <div class="hint-row">
+      <span class="hint-tag">Hint 2</span>
+      <div id="hint2Value" class="hint-value"></div>
+    </div>
+  </div>
+
   <div id="quoteClue" class="clue-card" hidden>
     <p id="quoteText"></p>
     <span id="quoteNote" class="quote-note"></span>
@@ -152,7 +163,8 @@
       <button class="modal-close" data-close="infoModal" aria-label="Close">&times;</button>
       <h2>How to Play</h2>
       <p><strong>Classic</strong> &mdash; guess the character. Every guess compares Gender, Origin,
-        Fighting Style, Saga, Height, Weight, Age, and Status against the answer.</p>
+        Fighting Style, Saga, Height, Weight, Age, and Status against the answer. A nickname hint
+        unlocks after 3 guesses, and a portrait hint (a full giveaway) unlocks after 6.</p>
       <ul class="rules-list">
         <li><span class="dot correct"></span> Green = exact match.</li>
         <li><span class="dot partial"></span> Yellow = close (Height ±5cm, Weight ±8kg, Age ±5yrs,

@@ -248,6 +248,49 @@ h1::before {
   letter-spacing: 0.05em;
 }
 
+.hints-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hint-tag {
+  flex-shrink: 0;
+  width: 58px;
+  font-family: var(--display-font);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hint-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.hint-value.unlocked {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.hint-value .avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+}
+
 .emoji-clue {
   padding: 26px;
 }

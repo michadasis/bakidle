@@ -6,6 +6,9 @@ const els = {
   board: document.getElementById("board").querySelector("tbody"),
   simpleBoard: document.getElementById("simpleBoard"),
   legend: document.getElementById("legend"),
+  classicHints: document.getElementById("classicHints"),
+  hint1Value: document.getElementById("hint1Value"),
+  hint2Value: document.getElementById("hint2Value"),
   quoteClue: document.getElementById("quoteClue"),
   quoteText: document.getElementById("quoteText"),
   quoteNote: document.getElementById("quoteNote"),
@@ -48,6 +51,7 @@ const TOLERANCE = { height: 5, weight: 8, age: 5 };
 const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, voice: 23 };
 const EMOJI_MAP = { correct: "🟩", partial: "🟨", wrong: "🟥" };
 const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
+const CLASSIC_HINT_THRESHOLDS = { alias: 3, portrait: 6 };
 const EPOCH = new Date(2026, 8, 6);
 
 let activeGameMode = "classic";
@@ -313,11 +317,35 @@ function renderVoiceClue() {
   els.voiceHint.textContent = state.finished ? "" : `${revealed}/${total} clips unlocked — a wrong guess unlocks another`;
 }
 
+function renderClassicHints() {
+  const guesses = state.guesses.length;
+  const aliasUnlocked = state.finished || guesses >= CLASSIC_HINT_THRESHOLDS.alias;
+  const portraitUnlocked = state.finished || guesses >= CLASSIC_HINT_THRESHOLDS.portrait;
+
+  els.hint1Value.textContent = aliasUnlocked
+    ? `Known as "${state.answer.alias}"`
+    : `🔒 Unlocks after ${CLASSIC_HINT_THRESHOLDS.alias} guesses`;
+  els.hint1Value.classList.toggle("unlocked", aliasUnlocked);
+
+  els.hint2Value.innerHTML = "";
+  els.hint2Value.classList.toggle("unlocked", portraitUnlocked);
+  if (portraitUnlocked) {
+    els.hint2Value.appendChild(buildAvatar(state.answer, 48));
+    const span = document.createElement("span");
+    span.textContent = "That's them.";
+    els.hint2Value.appendChild(span);
+  } else {
+    els.hint2Value.textContent = `🔒 Unlocks after ${CLASSIC_HINT_THRESHOLDS.portrait} guesses`;
+  }
+}
+
 function renderClue() {
+  els.classicHints.hidden = state.gameMode !== "classic";
   els.quoteClue.hidden = state.gameMode !== "quote";
   els.emojiClue.hidden = state.gameMode !== "emoji";
   els.splashClue.hidden = state.gameMode !== "splash";
   els.voiceClue.hidden = state.gameMode !== "voice";
+  if (state.gameMode === "classic") renderClassicHints();
   if (state.gameMode === "quote") {
     els.quoteText.textContent = state.answer.quote;
     els.quoteNote.textContent = state.answer.quoteVerified ? "" : "Paraphrased line";
@@ -355,6 +383,7 @@ function render() {
   els.giveUpRow.hidden = state.empty || state.finished;
   els.guessCount.textContent = "";
   if (state.empty) {
+    els.classicHints.hidden = true;
     els.quoteClue.hidden = true;
     els.emojiClue.hidden = true;
     els.splashClue.hidden = true;
