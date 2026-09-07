@@ -105,8 +105,6 @@ let state = {
   won: false,
   empty: false,
   day: null,
-  locked: false,
-  unlockAt: null,
 };
 
 function answerPool(mode) {
@@ -115,17 +113,23 @@ function answerPool(mode) {
   return CHARACTERS;
 }
 
-/* ---------- date / seeding (shared answer for everyone, resets at midnight UTC) ---------- */
+/* ---------- date / seeding (shared answer for everyone, resets at 12 AM UTC) ---------- */
 
+// The epoch is a UTC midnight, so every day boundary lands on 12:00 AM UTC. One clock for
+// the whole site: the countdown, the puzzle rollover and the played-today markers all read
+// from globalDayIndex() / msUntilGlobalReset(), so all modes reset together for everyone.
 const EPOCH_MS = Date.UTC(2026, 8, 6);
-const PERSONAL_LOCK_MS = 86400000;
+const DAY_MS = 86400000;
+// Bump this to wipe every player's saved progress, streaks and stats at once.
+// Old keys are cleared on boot by purgeLegacyStorage().
+const STORAGE_VERSION = "v2";
 
 function globalDayIndex() {
-  return Math.floor((Date.now() - EPOCH_MS) / 86400000);
+  return Math.floor((Date.now() - EPOCH_MS) / DAY_MS);
 }
 
 function msUntilGlobalReset() {
-  return 86400000 - (((Date.now() - EPOCH_MS) % 86400000) + 86400000) % 86400000;
+  return DAY_MS - ((((Date.now() - EPOCH_MS) % DAY_MS) + DAY_MS) % DAY_MS);
 }
 
 function hashSeed(n) {
@@ -136,32 +140,81 @@ function hashSeed(n) {
   return x >>> 0;
 }
 
+// Fisher-Yates driven by a deterministic xorshift, so every client builds the same order.
+function shuffledOrder(n, seed) {
+  const order = Array.from({ length: n }, (_, i) => i);
+  let s = (seed >>> 0) || 1;
+  const next = () => {
+    s ^= s << 13; s >>>= 0;
+    s ^= s >>> 17;
+    s ^= s << 5;  s >>>= 0;
+    return s;
+  };
+  for (let i = n - 1; i > 0; i--) {
+    const j = next() % (i + 1);
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+
+// Deals the pool out in shuffled cycles instead of drawing independently each day, so every
+// character appears once before any repeats and each cycle gets a fresh order. The previous
+// scheme (hashSeed(day + offset) % poolSize) repeated characters inside the first week and
+// let the small per-mode offsets alias, making classic day 7 identical to quote day 0.
 function seedForDay(day, offset, poolSize) {
-  return hashSeed(day + offset) % poolSize;
+  const cycle = Math.floor(day / poolSize);
+  const slot = ((day % poolSize) + poolSize) % poolSize;
+  return shuffledOrder(poolSize, hashSeed(cycle * 2654435761 + offset))[slot];
 }
 
 function dailyKey(mode, day) {
-  return `bakidle_daily_${mode}_${day}`;
+  return `bakidle_daily_${STORAGE_VERSION}_${mode}_${day}`;
 }
 
-/* ---------- personal per-mode lock (24h cooldown after finishing a mode) ---------- */
+/* ---------- per-day records ---------- */
 
-function lockKey(mode) {
-  return `bakidle_lock_${mode}`;
+function loadDaily(mode, day) {
+  const raw = localStorage.getItem(dailyKey(mode, day));
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
-function getModeLock(mode) {
-  const raw = localStorage.getItem(lockKey(mode));
-  return raw ? JSON.parse(raw) : null;
+// Finishing a mode closes it for the current UTC day only; the next 12 AM UTC reopens every
+// mode at the same instant for every player.
+function isModeFinished(mode, day) {
+  const rec = loadDaily(mode, day);
+  return !!rec && rec.finished;
 }
 
-function setModeLock(mode, day) {
-  localStorage.setItem(lockKey(mode), JSON.stringify({ day, unlockAt: Date.now() + PERSONAL_LOCK_MS }));
+// Drops entries from earlier storage versions (including the retired per-mode 24h locks) and
+// finished days that are behind us, so localStorage does not grow without bound.
+function purgeLegacyStorage() {
+  const today = globalDayIndex();
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (!key || !key.startsWith("bakidle_")) continue;
+    if (key.startsWith("bakidle_lock_")) {
+      localStorage.removeItem(key);
+      continue;
+    }
+    if (!key.includes(`_${STORAGE_VERSION}_`) && !key.endsWith(`_${STORAGE_VERSION}`)) {
+      localStorage.removeItem(key);
+      continue;
+    }
+    if (key.startsWith(`bakidle_daily_${STORAGE_VERSION}_`)) {
+      const day = Number(key.slice(key.lastIndexOf("_") + 1));
+      if (Number.isFinite(day) && day !== today) localStorage.removeItem(key);
+    }
+  }
 }
 
 /* ---------- global streak (spans all game modes) ---------- */
 
-const GLOBAL_STREAK_KEY = "bakidle_streak_global";
+const GLOBAL_STREAK_KEY = `bakidle_streak_global_${STORAGE_VERSION}`;
 
 function loadGlobalStreak() {
   const raw = localStorage.getItem(GLOBAL_STREAK_KEY);
@@ -335,11 +388,9 @@ function formatCountdown(ms) {
   return `${h}:${m}:${s}`;
 }
 
+// One countdown for every mode and every player: time left until 12 AM UTC.
 function updateResetTimer() {
-  const inGame = !els.gameView.hidden;
-  const showPersonal = inGame && state && !state.empty && state.locked;
-  const ms = showPersonal ? state.unlockAt - Date.now() : msUntilGlobalReset();
-  els.resetCountdown.textContent = formatCountdown(ms);
+  els.resetCountdown.textContent = formatCountdown(msUntilGlobalReset());
 }
 
 function updateStreakLine() {
@@ -622,22 +673,17 @@ function persist() {
 function loadState(gameMode) {
   const pool = answerPool(gameMode);
   if (pool.length === 0) {
-    state = { gameMode, answer: null, guesses: [], finished: false, won: false, empty: true, day: null, locked: false, unlockAt: null };
+    state = { gameMode, answer: null, guesses: [], finished: false, won: false, empty: true, day: null };
     render();
     return;
   }
 
-  const lock = getModeLock(gameMode);
-  const locked = !!lock && Date.now() < lock.unlockAt;
-  const day = locked ? lock.day : globalDayIndex();
+  const day = globalDayIndex();
   const answer = pool[seedForDay(day, SEED_OFFSETS[gameMode], pool.length)];
-  const saved = localStorage.getItem(dailyKey(gameMode, day));
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    state = { gameMode, answer, guesses: parsed.guesses, finished: parsed.finished, won: parsed.won, empty: false, day, locked, unlockAt: locked ? lock.unlockAt : null };
-  } else {
-    state = { gameMode, answer, guesses: [], finished: false, won: false, empty: false, day, locked, unlockAt: locked ? lock.unlockAt : null };
-  }
+  const saved = loadDaily(gameMode, day);
+  state = saved
+    ? { gameMode, answer, guesses: saved.guesses, finished: saved.finished, won: saved.won, empty: false, day }
+    : { gameMode, answer, guesses: [], finished: false, won: false, empty: false, day };
   render();
 }
 
@@ -646,12 +692,12 @@ function refresh() {
 }
 
 function renderModeStatuses() {
+  const today = globalDayIndex();
   document.querySelectorAll("[data-status-for]").forEach((el) => {
     const mode = el.dataset.statusFor;
-    const lock = getModeLock(mode);
     el.className = "mode-item-status";
     el.innerHTML = "";
-    if (!lock || Date.now() >= lock.unlockAt) return;
+    if (!isModeFinished(mode, today)) return;
     el.classList.add("status-won");
     el.innerHTML = iconMarkup("check");
   });
@@ -703,9 +749,6 @@ function submitGuess(rawName) {
     state.finished = true;
     state.won = true;
     els.input.disabled = true;
-    setModeLock(state.gameMode, state.day);
-    state.locked = true;
-    state.unlockAt = getModeLock(state.gameMode).unlockAt;
     updateStats(true, state.guesses.length);
     recordGlobalWin();
     updateResultBanner();
@@ -812,7 +855,7 @@ els.voicePlayBtn.addEventListener("click", () => {
 /* ---------- stats ---------- */
 
 function statsKey(mode) {
-  return `bakidle_stats_${mode}`;
+  return `bakidle_stats_${STORAGE_VERSION}_${mode}`;
 }
 
 function loadStats(mode) {
@@ -912,6 +955,8 @@ function launchConfetti() {
 
 /* ---------- boot ---------- */
 
+purgeLegacyStorage();
+
 let lastKnownDay = globalDayIndex();
 
 function tickResetTimer() {
@@ -920,11 +965,12 @@ function tickResetTimer() {
   const dayChanged = day !== lastKnownDay;
   if (dayChanged) lastKnownDay = day;
 
-  const inGame = els.modeSelect.hidden;
-  if (inGame) {
-    const lockExpired = state && !state.empty && state.locked && Date.now() >= state.unlockAt;
-    if (lockExpired || (dayChanged && state && !state.locked)) refresh();
-  } else if (dayChanged) {
+  if (!dayChanged) return;
+
+  // Every mode rolls over together at 12 AM UTC, so one day change refreshes whatever is shown.
+  if (els.modeSelect.hidden) {
+    refresh();
+  } else {
     updateDayNumber();
     updateStreakLine();
     renderModeStatuses();
