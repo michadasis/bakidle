@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/style.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -39,26 +39,37 @@
   </script>
 </head>
 <body>
-  <div class="icon-row">
-    <button id="infoBtn" class="icon-btn" title="How to play" aria-label="How to play">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
-    </button>
-    <button id="statsBtn" class="icon-btn" title="Statistics" aria-label="Statistics">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" /></svg>
-    </button>
-  </div>
-
   <header>
     <h1>BAKIDLE</h1>
     <p class="subtitle">Guess the Baki character</p>
     <div id="dayNumber" class="day-number"></div>
-    <div class="reset-timer"><span id="resetCountdown">00:00:00</span></div>
-    <div id="streakLine" class="streak-badge" hidden>
-      <span class="flame"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></svg></span>
-      <span id="streakCount" class="streak-count"></span>
-      <span class="streak-label"></span>
-    </div>
   </header>
+
+  <nav id="modeRail" class="mode-rail" aria-label="Switch game mode" hidden></nav>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <button id="statsBtn" class="toolbar-btn" title="Statistics" aria-label="Statistics">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" /></svg>
+      </button>
+      <div id="streakLine" class="streak-flame" title="Win streak">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></svg>
+        <span id="streakCount" class="streak-count">0</span>
+        <span class="sr-only">win streak</span>
+      </div>
+    </div>
+    <button id="settingsBtn" class="toolbar-btn" title="Settings" aria-label="Settings">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+    </button>
+    <button id="infoBtn" class="toolbar-btn" title="How to play" aria-label="How to play">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+    </button>
+  </div>
+
+  <div id="resetTimer" class="reset-timer" hidden>
+    <span class="reset-label">Next puzzle in</span>
+    <span id="resetCountdown">00:00:00</span>
+  </div>
 
   <div id="modeSelect" class="mode-select">
     <div class="mode-list">
@@ -240,6 +251,23 @@
     </div>
   </div>
 
+  <div id="settingsModal" class="modal-overlay" hidden>
+    <div class="modal">
+      <button class="modal-close" data-close="settingsModal" aria-label="Close">&times;</button>
+      <h2>Settings</h2>
+      <label class="setting-row" for="modernOnlyToggle">
+        <span class="setting-text">
+          <span class="setting-title">Modern era only</span>
+          <span class="setting-desc">Leave out characters who never appear past the original
+            Baki the Grappler run, so only newer-series characters can be the answer.</span>
+        </span>
+        <input type="checkbox" id="modernOnlyToggle" class="setting-switch" />
+        <span class="setting-track" aria-hidden="true"></span>
+      </label>
+      <p id="settingsPoolNote" class="settings-note"></p>
+    </div>
+  </div>
+
   <div id="statsModal" class="modal-overlay" hidden>
     <div class="modal">
       <button class="modal-close" data-close="statsModal" aria-label="Close">&times;</button>
@@ -250,7 +278,7 @@
 
   <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+  <script src="/data.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>

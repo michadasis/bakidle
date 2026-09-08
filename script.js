@@ -30,9 +30,35 @@ const GAME_MODES = [
   { id: "voice", label: "Voice Lines", icon: "mic" },
 ];
 
-function nextGameMode(mode) {
-  const idx = GAME_MODES.findIndex((m) => m.id === mode);
-  return GAME_MODES[(idx + 1) % GAME_MODES.length];
+// Each mode has its own URL (/classic, /quote, ...) with the mode list at /. Vercel rewrites
+// those paths to index.html; see vercel.json.
+function modeFromPath() {
+  const seg = location.pathname.replace(/\/+$/, "").split("/").pop();
+  return GAME_MODES.some((m) => m.id === seg) ? seg : null;
+}
+
+function syncUrl(mode, replace) {
+  const path = mode ? `/${mode}` : "/";
+  if (location.pathname === path) return;
+  try {
+    history[replace ? "replaceState" : "pushState"]({ mode: mode || null }, "", path);
+  } catch {
+    // Opened straight off the filesystem, where pushState rejects the path. Routing is a
+    // nicety here; the game itself keeps working.
+  }
+}
+
+// The first mode still unsolved today, read top to bottom in the same order the mode list
+// shows them. Skips the mode just finished (its record is not written yet) and any with an
+// empty pool. Returns null when nothing is left, which turns the button into a way back to
+// the list rather than a loop into an already-finished board.
+function nextUnplayedMode(mode) {
+  const today = globalDayIndex();
+  return (
+    GAME_MODES.find(
+      (m) => m.id !== mode && answerPool(m.id).length > 0 && !isModeFinished(m.id, today)
+    ) || null
+  );
 }
 
 const els = {
@@ -69,6 +95,8 @@ const els = {
   statusLine: document.getElementById("statusLine"),
   guessCount: document.getElementById("guessCount"),
   dayNumber: document.getElementById("dayNumber"),
+  modeRail: document.getElementById("modeRail"),
+  resetTimer: document.getElementById("resetTimer"),
   resetCountdown: document.getElementById("resetCountdown"),
   streakLine: document.getElementById("streakLine"),
   streakCount: document.getElementById("streakCount"),
@@ -83,6 +111,10 @@ const els = {
   winStreakLine: document.getElementById("winStreakLine"),
   infoBtn: document.getElementById("infoBtn"),
   statsBtn: document.getElementById("statsBtn"),
+  settingsBtn: document.getElementById("settingsBtn"),
+  settingsModal: document.getElementById("settingsModal"),
+  modernOnlyToggle: document.getElementById("modernOnlyToggle"),
+  settingsPoolNote: document.getElementById("settingsPoolNote"),
   infoModal: document.getElementById("infoModal"),
   statsModal: document.getElementById("statsModal"),
   statsContent: document.getElementById("statsContent"),
@@ -107,10 +139,15 @@ let state = {
   day: null,
 };
 
+function eligibleCharacters() {
+  return settings.modernOnly ? CHARACTERS.filter((c) => !c.grapplerOnly) : CHARACTERS;
+}
+
 function answerPool(mode) {
-  if (mode === "splash") return CHARACTERS.filter((c) => c.image);
-  if (mode === "voice") return CHARACTERS.filter((c) => Array.isArray(c.voiceClips) && c.voiceClips.length > 0);
-  return CHARACTERS;
+  const pool = eligibleCharacters();
+  if (mode === "splash") return pool.filter((c) => c.image);
+  if (mode === "voice") return pool.filter((c) => Array.isArray(c.voiceClips) && c.voiceClips.length > 0);
+  return pool;
 }
 
 /* ---------- date / seeding (shared answer for everyone, resets at 12 AM UTC) ---------- */
@@ -168,7 +205,33 @@ function seedForDay(day, offset, poolSize) {
 }
 
 function dailyKey(mode, day) {
-  return `bakidle_daily_${STORAGE_VERSION}_${mode}_${day}`;
+  return `bakidle_daily_${STORAGE_VERSION}_${mode}_${poolTag()}_${day}`;
+}
+
+/* ---------- settings ---------- */
+
+const SETTINGS_KEY = `bakidle_settings_${STORAGE_VERSION}`;
+const DEFAULT_SETTINGS = { modernOnly: false };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+let settings = loadSettings();
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+// Each pool gets its own saved progress: the answer differs between them, so sharing a key
+// would replay yesterday's guesses against a character they were never aimed at.
+function poolTag() {
+  return settings.modernOnly ? "modern" : "all";
 }
 
 /* ---------- per-day records ---------- */
@@ -282,6 +345,12 @@ function buildAvatar(char, sizePx) {
 
 /* ---------- comparisons ---------- */
 
+// Pickle's age is ~200 million, which swamps the cell if printed in full. The stored value
+// stays exact so the higher/lower comparison is still honest.
+function formatAge(age) {
+  return age >= 1000000 ? `~${Math.round(age / 1000000)}M` : `${age}`;
+}
+
 function numCompare(guessVal, answerVal, tolerance) {
   const diff = Math.abs(guessVal - answerVal);
   const cls = diff === 0 ? "correct" : diff <= tolerance ? "partial" : "wrong";
@@ -350,7 +419,7 @@ function addClassicRow(guessChar) {
   tr.appendChild(makeCell("Saga (Arc)", guessChar.saga, cmp.saga.cls, cmp.saga.arrow));
   tr.appendChild(makeCell("Height", `${guessChar.height} cm`, cmp.height.cls, cmp.height.arrow));
   tr.appendChild(makeCell("Weight", `${guessChar.weight} kg`, cmp.weight.cls, cmp.weight.arrow));
-  tr.appendChild(makeCell("Age", `${guessChar.age}`, cmp.age.cls, cmp.age.arrow));
+  tr.appendChild(makeCell("Age", formatAge(guessChar.age), cmp.age.cls, cmp.age.arrow));
   tr.appendChild(makeCell("Status", guessChar.status, cmp.status.cls));
 
   els.board.prepend(tr);
@@ -388,15 +457,61 @@ function formatCountdown(ms) {
   return `${h}:${m}:${s}`;
 }
 
+function playableModes() {
+  return GAME_MODES.filter((m) => answerPool(m.id).length > 0);
+}
+
+function allModesFinishedToday() {
+  const today = globalDayIndex();
+  return playableModes().every((m) => isModeFinished(m.id, today));
+}
+
+// The countdown is only useful once there is nothing left to play: inside a mode that means
+// you have solved it, and on the mode list it means every mode is done for the day.
+function shouldShowCountdown() {
+  if (els.gameView.hidden) return allModesFinishedToday();
+  return !!state && !state.empty && state.finished;
+}
+
 // One countdown for every mode and every player: time left until 12 AM UTC.
 function updateResetTimer() {
+  els.resetTimer.hidden = !shouldShowCountdown();
   els.resetCountdown.textContent = formatCountdown(msUntilGlobalReset());
+}
+
+// Quick switcher shown once a mode is picked, so you can move between modes without
+// going back to the list. Rebuilt on every render so the solved check marks stay current.
+function renderModeRail() {
+  const today = globalDayIndex();
+  els.modeRail.innerHTML = "";
+  GAME_MODES.forEach((mode) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `rail-btn${mode.id === activeGameMode ? " active" : ""}`;
+    btn.dataset.railMode = mode.id;
+    btn.title = mode.label;
+    btn.setAttribute("aria-label", mode.label);
+    if (mode.id === activeGameMode) btn.setAttribute("aria-current", "true");
+    btn.disabled = answerPool(mode.id).length === 0;
+    btn.innerHTML = iconMarkup(mode.icon);
+    if (isModeFinished(mode.id, today)) {
+      const check = document.createElement("span");
+      check.className = "rail-check";
+      check.innerHTML = iconMarkup("check");
+      btn.appendChild(check);
+    }
+    btn.addEventListener("click", () => {
+      if (mode.id !== activeGameMode) selectMode(mode.id);
+    });
+    els.modeRail.appendChild(btn);
+  });
 }
 
 function updateStreakLine() {
   const g = loadGlobalStreak();
-  els.streakLine.hidden = g.currentStreak <= 0;
-  if (g.currentStreak > 0) els.streakCount.textContent = g.currentStreak;
+  els.streakCount.textContent = g.currentStreak;
+  els.streakLine.classList.toggle("is-zero", g.currentStreak <= 0);
+  els.streakLine.title = g.currentStreak > 0 ? `${g.currentStreak}-day win streak` : "No win streak yet";
 }
 
 function renderEmojiClue() {
@@ -603,8 +718,8 @@ function updateResultBanner() {
       ? `<span class="streak-badge"><span class="flame">${iconMarkup("flame")}</span><span class="streak-count">${g.currentStreak}</span></span>`
       : "";
 
-  const next = nextGameMode(state.gameMode);
-  if (answerPool(next.id).length > 0) {
+  const next = nextUnplayedMode(state.gameMode);
+  if (next) {
     els.nextModeBtn.dataset.nextMode = next.id;
     els.nextModeBtn.innerHTML = `${iconMarkup(next.icon)}<span>${next.label}</span>`;
   } else {
@@ -613,12 +728,22 @@ function updateResultBanner() {
   }
 }
 
+// Winning reveals the banner, re-renders the clue and drops in the countdown, all of which
+// change the page height. Scrolling in the same tick aimed at the pre-reveal offset and left
+// the banner off screen, so wait two frames for layout to settle first.
 function scrollToResult() {
-  els.winBanner.scrollIntoView({ behavior: "smooth", block: "center" });
+  const bring = () => els.winBanner.scrollIntoView({ behavior: "smooth", block: "center" });
+  requestAnimationFrame(() => requestAnimationFrame(bring));
+  // The result avatar is an <img>: decoding it after the scroll starts pushes the banner
+  // further down, so aim once more when it lands.
+  els.winBanner.querySelectorAll("img").forEach((img) => {
+    if (!img.complete) img.addEventListener("load", bring, { once: true });
+  });
 }
 
 function render() {
   updateDayNumber();
+  renderModeRail();
   updateResetTimer();
   updateStreakLine();
   els.emptyModeMsg.hidden = !state.empty;
@@ -703,24 +828,36 @@ function renderModeStatuses() {
   });
 }
 
-function showModeSelect() {
+function showModeSelect({ fromHistory = false } = {}) {
   // Hiding the game view doesn't stop playback on its own, and a clip would keep playing
   // audio behind the mode list.
   stopClip();
   els.gameView.hidden = true;
   els.modeSelect.hidden = false;
+  els.modeRail.hidden = true;
+  if (!fromHistory) syncUrl(null);
   updateDayNumber();
   updateResetTimer();
   updateStreakLine();
   renderModeStatuses();
 }
 
-function selectMode(mode) {
+function selectMode(mode, { fromHistory = false } = {}) {
   activeGameMode = mode;
   els.modeSelect.hidden = true;
   els.gameView.hidden = false;
+  els.modeRail.hidden = false;
+  if (!fromHistory) syncUrl(mode);
   refresh();
 }
+
+function applyRoute() {
+  const mode = modeFromPath();
+  if (mode) selectMode(mode, { fromHistory: true });
+  else showModeSelect({ fromHistory: true });
+}
+
+window.addEventListener("popstate", applyRoute);
 
 /* ---------- guessing ---------- */
 
@@ -754,11 +891,12 @@ function submitGuess(rawName) {
     updateResultBanner();
     updateStreakLine();
     updateResetTimer();
+    renderModeRail();
     launchConfetti();
-    scrollToResult();
   }
   renderClue();
   persist();
+  if (state.finished) scrollToResult();
 }
 
 /* ---------- suggestions (with keyboard nav) ---------- */
@@ -839,7 +977,7 @@ document.addEventListener("click", (e) => {
 document.querySelectorAll(".mode-item").forEach((btn) => {
   btn.addEventListener("click", () => selectMode(btn.dataset.mode));
 });
-els.backToModesBtn.addEventListener("click", showModeSelect);
+els.backToModesBtn.addEventListener("click", () => showModeSelect());
 els.nextModeBtn.addEventListener("click", () => {
   if (els.nextModeBtn.dataset.nextMode) selectMode(els.nextModeBtn.dataset.nextMode);
   else showModeSelect();
@@ -916,6 +1054,33 @@ function closeModal(el) {
   el.hidden = true;
 }
 
+function renderSettings() {
+  els.modernOnlyToggle.checked = settings.modernOnly;
+  const total = CHARACTERS.length;
+  const eligible = eligibleCharacters().length;
+  els.settingsPoolNote.textContent = settings.modernOnly
+    ? `${eligible} of ${total} characters can be the answer. Everyone stays guessable.`
+    : `All ${total} characters can be the answer.`;
+}
+
+els.settingsBtn.addEventListener("click", () => {
+  renderSettings();
+  openModal(els.settingsModal);
+});
+
+els.modernOnlyToggle.addEventListener("change", () => {
+  settings.modernOnly = els.modernOnlyToggle.checked;
+  saveSettings();
+  renderSettings();
+  // The pool just changed, so today's answer and the solved markers change with it.
+  if (els.gameView.hidden) {
+    renderModeStatuses();
+    updateResetTimer();
+  } else {
+    refresh();
+  }
+});
+
 els.infoBtn.addEventListener("click", () => openModal(els.infoModal));
 els.statsBtn.addEventListener("click", () => {
   renderStatsModal();
@@ -979,4 +1144,4 @@ function tickResetTimer() {
 
 setInterval(tickResetTimer, 1000);
 
-showModeSelect();
+applyRoute();
