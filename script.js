@@ -114,6 +114,7 @@ const els = {
   settingsBtn: document.getElementById("settingsBtn"),
   settingsModal: document.getElementById("settingsModal"),
   modernOnlyToggle: document.getElementById("modernOnlyToggle"),
+  mangaOnlyToggle: document.getElementById("mangaOnlyToggle"),
   settingsPoolNote: document.getElementById("settingsPoolNote"),
   infoModal: document.getElementById("infoModal"),
   statsModal: document.getElementById("statsModal"),
@@ -138,8 +139,15 @@ let state = {
   day: null,
 };
 
+// Characters the anime has never adapted sit out unless they are switched on, and then they
+// are in the game fully: answerable and guessable like everyone else.
+function inPlay() {
+  return settings.includeMangaOnly ? CHARACTERS : CHARACTERS.filter((c) => !c.mangaOnly);
+}
+
 function eligibleCharacters() {
-  return settings.modernOnly ? CHARACTERS.filter((c) => !c.grapplerOnly) : CHARACTERS;
+  const pool = inPlay();
+  return settings.modernOnly ? pool.filter((c) => !c.grapplerOnly) : pool;
 }
 
 // Published stats are patchy: some of the cast have a height and weight but no recorded age,
@@ -166,7 +174,8 @@ function answerPool(mode) {
 // Who you are allowed to type. Unlike the answer pool this ignores the era setting — every
 // character stays guessable — but Classic still hides the ones with no stats to compare.
 function guessPool(mode) {
-  return mode === "classic" ? CHARACTERS.filter(canCompareStats) : CHARACTERS;
+  const pool = inPlay();
+  return mode === "classic" ? pool.filter(canCompareStats) : pool;
 }
 
 /* ---------- date / seeding (shared answer for everyone, resets at 12 AM UTC) ---------- */
@@ -300,7 +309,7 @@ function dailyKey(mode, day) {
 /* ---------- settings ---------- */
 
 const SETTINGS_KEY = `bakidle_settings_${STORAGE_VERSION}`;
-const DEFAULT_SETTINGS = { modernOnly: false };
+const DEFAULT_SETTINGS = { modernOnly: false, includeMangaOnly: false };
 
 function loadSettings() {
   try {
@@ -320,7 +329,7 @@ function saveSettings() {
 // Each pool gets its own saved progress: the answer differs between them, so sharing a key
 // would replay yesterday's guesses against a character they were never aimed at.
 function poolTag() {
-  return settings.modernOnly ? "modern" : "all";
+  return (settings.modernOnly ? "modern" : "all") + (settings.includeMangaOnly ? "+manga" : "");
 }
 
 /* ---------- per-day records ---------- */
@@ -956,11 +965,13 @@ function submitGuess(rawName) {
   if (state.finished || state.empty) return;
   const char = guessPool(state.gameMode).find((c) => c.name.toLowerCase() === rawName.toLowerCase());
   if (!char) {
-    // Naming a real character Classic cannot use reads as a typo unless we say why.
+    // Naming a real character the mode cannot use reads as a typo unless we say why, and the
+    // two reasons need different wording: held back by a setting, or missing the stats to compare.
     const known = CHARACTERS.find((c) => c.name.toLowerCase() === rawName.toLowerCase());
-    els.statusLine.textContent = known
-      ? `No height or weight on record for ${known.name}, so Classic leaves them out.`
-      : "Pick a character from the list.";
+    if (!known) els.statusLine.textContent = "Pick a character from the list.";
+    else if (known.mangaOnly && !settings.includeMangaOnly)
+      els.statusLine.textContent = `${known.name} never appears in the anime. Settings can bring them in.`;
+    else els.statusLine.textContent = `No height or weight on record for ${known.name}, so Classic leaves them out.`;
     return;
   }
   if (state.guesses.includes(char.name)) {
@@ -1151,11 +1162,13 @@ function closeModal(el) {
 
 function renderSettings() {
   els.modernOnlyToggle.checked = settings.modernOnly;
-  const total = CHARACTERS.length;
+  els.mangaOnlyToggle.checked = settings.includeMangaOnly;
+  const playable = inPlay().length;
   const eligible = eligibleCharacters().length;
-  els.settingsPoolNote.textContent = settings.modernOnly
-    ? `${eligible} of ${total} characters can be the answer. Everyone stays guessable.`
-    : `All ${total} characters can be the answer.`;
+  els.settingsPoolNote.textContent =
+    eligible === playable
+      ? `All ${playable} characters in play can be the answer.`
+      : `${eligible} of the ${playable} characters in play can be the answer.`;
 }
 
 els.settingsBtn.addEventListener("click", () => {
@@ -1163,17 +1176,26 @@ els.settingsBtn.addEventListener("click", () => {
   openModal(els.settingsModal);
 });
 
-els.modernOnlyToggle.addEventListener("change", () => {
-  settings.modernOnly = els.modernOnlyToggle.checked;
+// The pool just changed, so today's answer and the solved markers change with it.
+function onSettingChanged() {
   saveSettings();
   renderSettings();
-  // The pool just changed, so today's answer and the solved markers change with it.
   if (els.gameView.hidden) {
     renderModeStatuses();
     updateResetTimer();
   } else {
     refresh();
   }
+}
+
+els.modernOnlyToggle.addEventListener("change", () => {
+  settings.modernOnly = els.modernOnlyToggle.checked;
+  onSettingChanged();
+});
+
+els.mangaOnlyToggle.addEventListener("change", () => {
+  settings.includeMangaOnly = els.mangaOnlyToggle.checked;
+  onSettingChanged();
 });
 
 els.infoBtn.addEventListener("click", () => openModal(els.infoModal));
