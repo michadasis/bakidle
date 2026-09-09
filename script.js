@@ -171,10 +171,11 @@ function answerPool(mode) {
   return pool;
 }
 
-// Who you are allowed to type. Unlike the answer pool this ignores the era setting — every
-// character stays guessable — but Classic still hides the ones with no stats to compare.
+// Who you are allowed to type. Anyone a setting has excluded is gone from the search too, so
+// the list never offers a character who cannot be today's answer. Classic additionally hides
+// the ones with no stats to compare.
 function guessPool(mode) {
-  const pool = inPlay();
+  const pool = eligibleCharacters();
   return mode === "classic" ? pool.filter(canCompareStats) : pool;
 }
 
@@ -971,6 +972,8 @@ function submitGuess(rawName) {
     if (!known) els.statusLine.textContent = "Pick a character from the list.";
     else if (known.mangaOnly && !settings.includeMangaOnly)
       els.statusLine.textContent = `${known.name} never appears in the anime. Settings can bring them in.`;
+    else if (known.grapplerOnly && settings.modernOnly)
+      els.statusLine.textContent = `${known.name} does not appear past Baki the Grappler. Settings can bring them in.`;
     else els.statusLine.textContent = `No height or weight on record for ${known.name}, so Classic leaves them out.`;
     return;
   }
@@ -1163,12 +1166,10 @@ function closeModal(el) {
 function renderSettings() {
   els.modernOnlyToggle.checked = settings.modernOnly;
   els.mangaOnlyToggle.checked = settings.includeMangaOnly;
-  const playable = inPlay().length;
   const eligible = eligibleCharacters().length;
+  const classic = guessPool("classic").length;
   els.settingsPoolNote.textContent =
-    eligible === playable
-      ? `All ${playable} characters in play can be the answer.`
-      : `${eligible} of the ${playable} characters in play can be the answer.`;
+    `${eligible} of ${CHARACTERS.length} characters are in play. Classic uses the ${classic} with a recorded height and weight.`;
 }
 
 els.settingsBtn.addEventListener("click", () => {
