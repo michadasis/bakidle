@@ -1044,6 +1044,13 @@ table#board td.partial {
   color: #241a00;
 }
 
+/* A stat the source material never recorded: shown, but not compared. */
+table#board td.unknown {
+  background: var(--panel-2);
+  color: var(--muted);
+  border-color: var(--border);
+}
+
 table#board td.wrong {
   background: var(--red-cell);
   border-color: var(--red-cell);

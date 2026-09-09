@@ -142,11 +142,17 @@ function eligibleCharacters() {
   return settings.modernOnly ? CHARACTERS.filter((c) => !c.grapplerOnly) : CHARACTERS;
 }
 
-// The wiki never published height, weight or age for a lot of the Raitai and later cast, and
-// Classic compares exactly those three. Characters missing any of them still work everywhere
-// else, so they are kept out of Classic rather than out of the game.
+// Published stats are patchy: some of the cast have a height and weight but no recorded age,
+// and plenty have none of the three. Classic only ever answers with a character who has all
+// three, so the board is always fully solvable.
 function hasFullStats(c) {
   return Number.isFinite(c.height) && Number.isFinite(c.weight) && Number.isFinite(c.age);
+}
+
+// A guess only needs height and weight to be worth making — those two columns still narrow
+// things down, and the age cell reads "?" instead of comparing.
+function canCompareStats(c) {
+  return Number.isFinite(c.height) && Number.isFinite(c.weight);
 }
 
 function answerPool(mode) {
@@ -160,7 +166,7 @@ function answerPool(mode) {
 // Who you are allowed to type. Unlike the answer pool this ignores the era setting — every
 // character stays guessable — but Classic still hides the ones with no stats to compare.
 function guessPool(mode) {
-  return mode === "classic" ? CHARACTERS.filter(hasFullStats) : CHARACTERS;
+  return mode === "classic" ? CHARACTERS.filter(canCompareStats) : CHARACTERS;
 }
 
 /* ---------- date / seeding (shared answer for everyone, resets at 12 AM UTC) ---------- */
@@ -465,7 +471,7 @@ function computeComparisons(g, a) {
     saga: sagaCompare(g.saga, a.saga),
     height: numCompare(g.height, a.height, TOLERANCE.height),
     weight: numCompare(g.weight, a.weight, TOLERANCE.weight),
-    age: numCompare(g.age, a.age, TOLERANCE.age),
+    age: Number.isFinite(g.age) ? numCompare(g.age, a.age, TOLERANCE.age) : { cls: "unknown", arrow: "" },
     status: { cls: g.status === a.status ? "correct" : "wrong" },
   };
 }
@@ -502,7 +508,9 @@ function addClassicRow(guessChar) {
   tr.appendChild(makeCell("Saga (Arc)", guessChar.saga, cmp.saga.cls, cmp.saga.arrow));
   tr.appendChild(makeCell("Height", `${guessChar.height} cm`, cmp.height.cls, cmp.height.arrow));
   tr.appendChild(makeCell("Weight", `${guessChar.weight} kg`, cmp.weight.cls, cmp.weight.arrow));
-  tr.appendChild(makeCell("Age", formatAge(guessChar.age), cmp.age.cls, cmp.age.arrow));
+  tr.appendChild(
+    makeCell("Age", Number.isFinite(guessChar.age) ? formatAge(guessChar.age) : "?", cmp.age.cls, cmp.age.arrow)
+  );
   tr.appendChild(makeCell("Status", guessChar.status, cmp.status.cls));
 
   els.board.prepend(tr);
@@ -951,7 +959,7 @@ function submitGuess(rawName) {
     // Naming a real character Classic cannot use reads as a typo unless we say why.
     const known = CHARACTERS.find((c) => c.name.toLowerCase() === rawName.toLowerCase());
     els.statusLine.textContent = known
-      ? `No height, weight or age on record for ${known.name}, so Classic leaves them out.`
+      ? `No height or weight on record for ${known.name}, so Classic leaves them out.`
       : "Pick a character from the list.";
     return;
   }
