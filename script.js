@@ -1107,7 +1107,22 @@ function statsKey(mode) {
 
 function loadStats(mode) {
   const raw = localStorage.getItem(statsKey(mode));
-  return raw ? JSON.parse(raw) : { played: 0, wins: 0, distribution: {} };
+  const s = { played: 0, wins: 0, distribution: {}, ...(raw ? JSON.parse(raw) : {}) };
+  // Records written before guesses were totalled only kept the histogram, so derive the
+  // totals from it once. The 7+ bucket has no exact value and counts as 7, which makes both
+  // numbers a floor rather than a guess.
+  if (s.totalGuesses === undefined || s.best === undefined) {
+    let total = 0;
+    let best = null;
+    for (const [bucket, count] of Object.entries(s.distribution)) {
+      const tries = bucket === "7+" ? 7 : Number(bucket);
+      total += tries * count;
+      if (count > 0) best = best === null ? tries : Math.min(best, tries);
+    }
+    s.totalGuesses = total;
+    s.best = best;
+  }
+  return s;
 }
 
 function updateStats(won, tries) {
@@ -1116,6 +1131,8 @@ function updateStats(won, tries) {
   s.played++;
   if (won) {
     s.wins++;
+    s.totalGuesses += tries;
+    s.best = s.best === null ? tries : Math.min(s.best, tries);
     const bucket = tries >= 7 ? "7+" : String(tries);
     s.distribution[bucket] = (s.distribution[bucket] || 0) + 1;
   }
@@ -1129,14 +1146,18 @@ function capitalize(s) {
 function renderStatsModal() {
   const s = loadStats(activeGameMode);
   const g = loadGlobalStreak();
-  const winPct = s.played ? Math.round((s.wins / s.played) * 100) : 0;
+  // There is no way to lose a round, so a win rate would read 100% forever. How many guesses
+  // it took is the thing that actually moves.
+  const average = s.wins ? (s.totalGuesses / s.wins).toFixed(1) : "—";
+  const best = s.best === null ? "—" : s.best;
   const buckets = ["1", "2", "3", "4", "5", "6", "7+"];
   const maxDist = Math.max(1, ...buckets.map((b) => s.distribution[b] || 0));
 
   els.statsContent.innerHTML = `
     <div class="stats-grid">
       <div><div class="stat-value">${s.played}</div><div class="stat-label">Played</div></div>
-      <div><div class="stat-value">${winPct}</div><div class="stat-label">Win %</div></div>
+      <div><div class="stat-value">${average}</div><div class="stat-label">Avg Tries</div></div>
+      <div><div class="stat-value">${best}</div><div class="stat-label">Best</div></div>
       <div><div class="stat-value">${g.currentStreak}</div><div class="stat-label">Streak</div></div>
       <div><div class="stat-value">${g.maxStreak}</div><div class="stat-label">Max Streak</div></div>
     </div>

@@ -1318,20 +1318,21 @@ footer {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin: 14px 0 20px;
   text-align: center;
 }
 
 .stats-grid .stat-value {
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--accent-2);
 }
 
 .stats-grid .stat-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
+  line-height: 1.25;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1553,7 +1554,8 @@ footer {
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 8px;
   }
 }
 
