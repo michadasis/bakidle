@@ -142,11 +142,25 @@ function eligibleCharacters() {
   return settings.modernOnly ? CHARACTERS.filter((c) => !c.grapplerOnly) : CHARACTERS;
 }
 
+// The wiki never published height, weight or age for a lot of the Raitai and later cast, and
+// Classic compares exactly those three. Characters missing any of them still work everywhere
+// else, so they are kept out of Classic rather than out of the game.
+function hasFullStats(c) {
+  return Number.isFinite(c.height) && Number.isFinite(c.weight) && Number.isFinite(c.age);
+}
+
 function answerPool(mode) {
   const pool = eligibleCharacters();
+  if (mode === "classic") return pool.filter(hasFullStats);
   if (mode === "splash") return pool.filter((c) => c.image);
   if (mode === "voice") return pool.filter((c) => Array.isArray(c.voiceClips) && c.voiceClips.length > 0);
   return pool;
+}
+
+// Who you are allowed to type. Unlike the answer pool this ignores the era setting — every
+// character stays guessable — but Classic still hides the ones with no stats to compare.
+function guessPool(mode) {
+  return mode === "classic" ? CHARACTERS.filter(hasFullStats) : CHARACTERS;
 }
 
 /* ---------- date / seeding (shared answer for everyone, resets at 12 AM UTC) ---------- */
@@ -203,65 +217,69 @@ const SEED_OFFSETS = { classic: 0, quote: 7, emoji: 13, splash: 19, voice: 23 };
 
 const DECK_SALT = 2654435761;
 
-// Builds every mode's deck for one cycle at once. A mode's deck starts as its own shuffle,
-// then any card sharing a day with an earlier mode is swapped to another position in the same
-// deck. Because the whole cycle is known here the swap can target any slot, and swapping two
-// positions leaves the deck a permutation — so each mode still answers with every character
-// exactly once per cycle, while no two modes ever share a day. Picking modes independently
-// collided on about 29% of days, handing a free win to anyone who solved one mode and opened
-// another.
-function buildCycleDecks(cycle, pools) {
-  const decks = {};
-  const laidOut = [];
-  GAME_MODES.forEach((mode) => {
-    const pool = pools[mode.id];
-    if (!pool || pool.length === 0) return;
-    const size = pool.length;
-    const deck = shuffledOrder(size, hashSeed(cycle * DECK_SALT + SEED_OFFSETS[mode.id])).map((i) => pool[i]);
-    const clashesAt = (slot, card) => laidOut.some((d) => slot < d.length && d[slot].name === card.name);
+// Modes are resolved in list order and each one only ever avoids the modes above it, so a
+// deck can always be built by consulting decks that are already settled.
+const MODE_RANK = GAME_MODES.map((m) => m.id);
 
+// Decks are cached per pool variant, mode and cycle. Pools of different sizes roll over on
+// different days, so a cycle number only means anything alongside the mode it belongs to.
+const deckCache = new Map();
+let deckCacheTag = null;
+
+function modeDeck(modeId, cycle) {
+  const tag = poolTag();
+  if (deckCacheTag !== tag) {
+    deckCacheTag = tag;
+    deckCache.clear();
+  }
+  const key = `${modeId}:${cycle}`;
+  const hit = deckCache.get(key);
+  if (hit) return hit;
+
+  const pool = answerPool(modeId);
+  const size = pool.length;
+  const deck = shuffledOrder(size, hashSeed(cycle * DECK_SALT + SEED_OFFSETS[modeId])).map((i) => pool[i]);
+  // Cache before repairing: the repair only reads decks of earlier modes, but caching first
+  // keeps a cycle from being built twice if one of those reads lands back on this mode.
+  deckCache.set(key, deck);
+
+  const earlier = MODE_RANK.slice(0, MODE_RANK.indexOf(modeId));
+  if (earlier.length) {
+    const startDay = cycle * size;
+    const clashes = (day, card) => earlier.some((other) => {
+      const taken = cardOn(other, day);
+      return taken && taken.name === card.name;
+    });
+    // A card sharing a day with an earlier mode is swapped elsewhere in this same deck. The
+    // whole cycle is in hand, so the swap can pick any slot rather than only the untouched
+    // tail, and swapping two positions leaves the deck a permutation — the mode still answers
+    // with every character exactly once before repeating.
     for (let slot = 0; slot < size; slot++) {
-      if (!clashesAt(slot, deck[slot])) continue;
+      if (!clashes(startDay + slot, deck[slot])) continue;
       for (let t = 0; t < size; t++) {
         if (t === slot) continue;
-        if (clashesAt(slot, deck[t]) || clashesAt(t, deck[slot])) continue;
+        if (clashes(startDay + slot, deck[t]) || clashes(startDay + t, deck[slot])) continue;
         [deck[slot], deck[t]] = [deck[t], deck[slot]];
         break;
       }
     }
-    decks[mode.id] = deck;
-    laidOut.push(deck);
-  });
-  return decks;
-}
-
-const dealCache = { tag: null, cycle: null, decks: null };
-
-function cycleDecks(cycle) {
-  const tag = poolTag();
-  if (dealCache.tag !== tag || dealCache.cycle !== cycle) {
-    const pools = {};
-    GAME_MODES.forEach((mode) => (pools[mode.id] = answerPool(mode.id)));
-    dealCache.tag = tag;
-    dealCache.cycle = cycle;
-    dealCache.decks = buildCycleDecks(cycle, pools);
   }
-  return dealCache.decks;
+  return deck;
 }
 
+function cardOn(modeId, day) {
+  const size = answerPool(modeId).length;
+  if (size === 0) return null;
+  return modeDeck(modeId, Math.floor(day / size))[day % size];
+}
+
+// Picking modes independently let one character be the answer in two of them at once, which
+// happened on about 29% of days and handed a free win to anyone who solved one mode then
+// opened another.
 function answersForDay(day) {
   const target = Math.max(0, day);
-  const base = eligibleCharacters();
   const picks = {};
-  if (base.length === 0) {
-    GAME_MODES.forEach((mode) => (picks[mode.id] = null));
-    return picks;
-  }
-  const decks = cycleDecks(Math.floor(target / base.length));
-  GAME_MODES.forEach((mode) => {
-    const deck = decks[mode.id];
-    picks[mode.id] = deck ? deck[target % deck.length] : null;
-  });
+  GAME_MODES.forEach((mode) => (picks[mode.id] = cardOn(mode.id, target)));
   return picks;
 }
 
@@ -928,9 +946,13 @@ window.addEventListener("popstate", applyRoute);
 
 function submitGuess(rawName) {
   if (state.finished || state.empty) return;
-  const char = CHARACTERS.find((c) => c.name.toLowerCase() === rawName.toLowerCase());
+  const char = guessPool(state.gameMode).find((c) => c.name.toLowerCase() === rawName.toLowerCase());
   if (!char) {
-    els.statusLine.textContent = "Pick a character from the list.";
+    // Naming a real character Classic cannot use reads as a typo unless we say why.
+    const known = CHARACTERS.find((c) => c.name.toLowerCase() === rawName.toLowerCase());
+    els.statusLine.textContent = known
+      ? `No height, weight or age on record for ${known.name}, so Classic leaves them out.`
+      : "Pick a character from the list.";
     return;
   }
   if (state.guesses.includes(char.name)) {
@@ -986,7 +1008,7 @@ function updateSuggestions() {
   closeSuggestions();
   if (!q) return;
   const guessed = new Set(state.guesses);
-  const matches = CHARACTERS.filter((c) => {
+  const matches = guessPool(state.gameMode).filter((c) => {
     if (guessed.has(c.name)) return false;
     return c.name.toLowerCase().split(/\s+/).some((token) => token.startsWith(q));
   })
