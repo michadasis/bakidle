@@ -4,7 +4,7 @@
 //   node tools/clips.mjs init [manifest]     scaffold a manifest listing every character
 //   node tools/clips.mjs batch [manifest]    cut every clip in the manifest, then sync
 //   node tools/clips.mjs cut <input> <start> <len> "<character>" [index]
-//   node tools/clips.mjs sync                rewrite data.js voiceClips from clips/
+//   node tools/clips.mjs sync                rewrite the character data voiceClips from public/clips/
 //
 // Sources are media files on your own disk. This tool never downloads anything.
 //
@@ -17,7 +17,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const CLIP_DIR = join(ROOT, "clips");
+const CLIP_DIR = join(ROOT, "public", "clips");
 const DATA_FILE = join(ROOT, "data.js");
 const DEFAULT_MANIFEST = join(ROOT, "clips.manifest.json");
 const CLIP_EXTS = [".mp3", ".ogg", ".wav", ".m4a"];

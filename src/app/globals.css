@@ -23,6 +23,48 @@
   display: none !important;
 }
 
+/*
+ * Navigation that used to be <button> is now <a>, so it picks up the browser's underline and
+ * link colour. These are still buttons as far as the design is concerned.
+ */
+a.back-btn,
+a.mode-item,
+a.next-mode-btn,
+a.rail-btn {
+  text-decoration: none;
+}
+
+/* Only where the class does not set a colour of its own, or this would win on specificity. */
+a.mode-item,
+a.next-mode-btn {
+  color: inherit;
+}
+
+/*
+ * These were <button> and silently inherited Chrome's 1px/6px default padding. As <a> they get
+ * none, which shifted everything below them by 2px. Stated explicitly so the layout no longer
+ * depends on a UA default at all.
+ */
+.back-btn,
+.next-mode-btn {
+  padding: 1px 6px;
+}
+
+/*
+ * .mode-item was a <button> and never declared a font, so it rendered in the UA's Arial
+ * 13.333px rather than the body face — which its description text then inherited. Pinned to
+ * keep the list looking exactly as it did; switch to `inherit` to adopt the site font.
+ */
+.mode-item {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13.3333px;
+}
+
+a[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

@@ -1,0 +1,29 @@
+{
+  "name": "bakidle",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "npm run validate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "validate": "tsx scripts/validate-data.ts",
+    "pretest": "npm run validate",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9",
+    "zod": "^3.25.76"
+  },
+  "dependencies": {
+    "next": "^15.5.25",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}
