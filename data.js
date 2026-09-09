@@ -325,5 +325,8 @@ const CHARACTERS = [
     image: "https://static.wikia.nocookie.net/baki/images/8/81/Chamomile_profile.png" },
   { name: "Amon Shuu", alias: "The Praying Mantis Master", gender: "Male", origin: "China", styles: ["Chinese Kenpo"], saga: "Great Raitaisai Saga", status: "Deceased",
     quote: "The mantis does not flinch at anything larger than itself.", emoji: ["🦗", "🇨🇳", "🥋", "👊"],
-    image: "https://static.wikia.nocookie.net/baki/images/f/fc/Shu_amon.png" }
+    image: "https://static.wikia.nocookie.net/baki/images/f/fc/Shu_amon.png" },
+  { name: "Kyouichirou Sabu", alias: "Hitokiri Sabu", gender: "Male", origin: "Japan", styles: ["Kenjutsu"], saga: "Musashi Saga", height: 178, weight: 86, age: 63, status: "Alive",
+    quote: "A blade does not need strength. It needs one honest moment.", emoji: ["⚔️", "🗾", "👴", "👁️"],
+    image: "https://static.wikia.nocookie.net/baki/images/f/f4/Kyouichirou_sabu.jpg" }
 ];
