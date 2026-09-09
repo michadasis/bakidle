@@ -2,48 +2,104 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { Character } from "@/data/characters";
+import type { ModeId } from "@/game/modes";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
 
 export const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
-export const CLASSIC_HINT_THRESHOLDS = { alias: 3, portrait: 6 };
+/**
+ * Every mode reveals two hints as guesses mount. Splash already shows the portrait, so it
+ * trades that second tile for the fighting style rather than giving the answer away outright.
+ */
+export const HINT_THRESHOLDS = { first: 3, second: 6 };
 
-export function ClassicHints({ answer, guesses, finished }: { answer: Character; guesses: number; finished: boolean }) {
-  const aliasUnlocked = finished || guesses >= CLASSIC_HINT_THRESHOLDS.alias;
-  const portraitUnlocked = finished || guesses >= CLASSIC_HINT_THRESHOLDS.portrait;
+type SecondHint = "portrait" | "styles";
+
+const SECOND_HINT: Record<ModeId, SecondHint> = {
+  classic: "portrait",
+  quote: "portrait",
+  emoji: "portrait",
+  splash: "styles",
+  voice: "portrait",
+};
+
+function HintTile({
+  icon,
+  title,
+  unlocked,
+  threshold,
+  children,
+}: {
+  icon: string;
+  title: string;
+  unlocked: boolean;
+  threshold: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`hint-tile ${unlocked ? "unlocked" : "locked"}`}>
+      <div className="hint-icon">
+        <Icon name={icon} />
+      </div>
+      <div className="hint-title">{title}</div>
+      <div className="hint-body">
+        {unlocked ? (
+          children
+        ) : (
+          <>
+            <Icon name="lock" /> {threshold} guesses
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Hints({
+  mode,
+  answer,
+  guesses,
+  finished,
+}: {
+  mode: ModeId;
+  answer: Character;
+  guesses: number;
+  finished: boolean;
+}) {
+  const firstUnlocked = finished || guesses >= HINT_THRESHOLDS.first;
+  const secondUnlocked = finished || guesses >= HINT_THRESHOLDS.second;
+  const second = SECOND_HINT[mode];
+
   return (
     <div className="clue-card hints-card">
       <div className="hint-tiles">
-        <div className={`hint-tile ${aliasUnlocked ? "unlocked" : "locked"}`}>
-          <div className="hint-icon">
-            <Icon name="tag" />
-          </div>
-          <div className="hint-title">Nickname</div>
-          <div className="hint-body">
-            {aliasUnlocked ? (
-              answer.alias ? `"${answer.alias}"` : "—"
-            ) : (
-              <>
-                <Icon name="lock" /> {CLASSIC_HINT_THRESHOLDS.alias} guesses
-              </>
-            )}
-          </div>
-        </div>
-        <div className={`hint-tile ${portraitUnlocked ? "unlocked" : "locked"}`}>
-          <div className="hint-icon">
-            <Icon name="image" />
-          </div>
-          <div className="hint-title">Portrait</div>
-          <div className="hint-body">
-            {portraitUnlocked ? (
-              <Avatar character={answer} size={56} />
-            ) : (
-              <>
-                <Icon name="lock" /> {CLASSIC_HINT_THRESHOLDS.portrait} guesses
-              </>
-            )}
-          </div>
-        </div>
+        <HintTile
+          icon="tag"
+          title="Nickname"
+          unlocked={firstUnlocked}
+          threshold={HINT_THRESHOLDS.first}
+        >
+          {answer.alias ? `"${answer.alias}"` : "—"}
+        </HintTile>
+        {second === "portrait" ? (
+          <HintTile
+            icon="image"
+            title="Portrait"
+            unlocked={secondUnlocked}
+            threshold={HINT_THRESHOLDS.second}
+          >
+            <Avatar character={answer} size={56} />
+          </HintTile>
+        ) : (
+          <HintTile
+            icon="swords"
+            title="Fighting Style"
+            unlocked={secondUnlocked}
+            threshold={HINT_THRESHOLDS.second}
+          >
+            {answer.styles.join(", ")}
+          </HintTile>
+        )}
       </div>
     </div>
   );
@@ -53,7 +109,6 @@ export function QuoteClue({ answer }: { answer: Character }) {
   return (
     <div className="clue-card">
       <p id="quoteText">{answer.quote}</p>
-      <span className="quote-note">{answer.quoteVerified ? "" : "Paraphrased line"}</span>
     </div>
   );
 }

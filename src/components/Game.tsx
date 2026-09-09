@@ -20,7 +20,7 @@ import { globalDayIndex } from "@/game/time";
 import { Avatar } from "./Avatar";
 import { ClassicBoard, SimpleBoard } from "./Boards";
 import { Countdown, DayNumber, ModeRail, Toolbar } from "./Chrome";
-import { ClassicHints, EmojiClue, QuoteClue, SplashClue, VoiceClue } from "./Clues";
+import { EmojiClue, Hints, QuoteClue, SplashClue, VoiceClue } from "./Clues";
 import { Confetti, type ConfettiHandle } from "./Confetti";
 import { GuessInput } from "./GuessInput";
 import { Icon } from "./Icon";
@@ -162,9 +162,7 @@ export function Game({ mode }: { mode: ModeId }) {
           ) : null
         ) : (
           <>
-            {mode === "classic" && (
-              <ClassicHints answer={answer} guesses={guesses.length} finished={finished} />
-            )}
+            <Hints mode={mode} answer={answer} guesses={guesses.length} finished={finished} />
             {mode === "quote" && <QuoteClue answer={answer} />}
             {mode === "emoji" && (
               <EmojiClue answer={answer} guesses={guesses.length} finished={finished} />

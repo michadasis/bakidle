@@ -134,8 +134,12 @@ export function HelpModal({ open, onClose }: { open: boolean; onClose: () => voi
     <Modal open={open} onClose={onClose} title="How to Play">
       <p>
         <strong>Classic</strong> &mdash; guess the character. Every guess compares Gender, Origin,
-        Fighting Style, Saga, Height, Weight, Age, and Status against the answer. A nickname hint
-        unlocks after 3 guesses, and a portrait hint (a full giveaway) unlocks after 6.
+        Fighting Style, Saga, Height, Weight, Age, and Status against the answer.
+      </p>
+      <p>
+        Every mode has two hints. A nickname unlocks after 3 guesses, and after 6 you get a
+        portrait &mdash; a full giveaway. Splash Art shows the fighting style instead, since it
+        is already showing you the picture.
       </p>
       <ul className="rules-list">
         <li>
@@ -151,9 +155,7 @@ export function HelpModal({ open, onClose }: { open: boolean; onClose: () => voi
         </li>
       </ul>
       <p>
-        <strong>Quote</strong> &mdash; guess the character from a line they say. Lines shown without
-        a note are sourced verbatim; a few are clearly-marked paraphrases where no verified source
-        was available.
+        <strong>Quote</strong> &mdash; guess the character from a line they say.
       </p>
       <p>
         <strong>Emoji</strong> &mdash; guess the character from an emoji clue. A wrong guess reveals
