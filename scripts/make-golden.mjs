@@ -1,5 +1,7 @@
 // Captures the behaviour of the pre-refactor script.js so the rewrite can be proved
-// equivalent. Run once against legacy/, never again: the file it writes is the reference.
+// equivalent. legacy/script.js is the reference and is never edited. legacy/data.js is kept
+// in step with src/data, and this is rerun only when the roster itself changes, so the
+// expected answers always come from the original code rather than the one under test.
 import fs from "node:fs";
 import path from "node:path";
 

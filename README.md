@@ -47,7 +47,7 @@ your guesses against a character they were never aimed at.
 src/game/        the rules. No DOM, no React, no module-level settings —
                  everything takes what it needs as an argument, which is
                  mostly why it's testable.
-src/data/        91 characters and 8 sagas as typed modules.
+src/data/        90 characters and 8 sagas as typed modules.
 src/components/  the UI.
 src/app/         a static page per mode, so /classic is a real URL.
 scripts/         data validation and the golden capture.
