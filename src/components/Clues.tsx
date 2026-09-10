@@ -27,13 +27,14 @@ function HintTile({
   icon,
   title,
   unlocked,
-  threshold,
+  remaining,
   children,
 }: {
   icon: string;
   title: string;
   unlocked: boolean;
-  threshold: number;
+  /** Guesses still to go, so the tile counts down rather than restating the threshold. */
+  remaining: number;
   children: React.ReactNode;
 }) {
   return (
@@ -47,7 +48,7 @@ function HintTile({
           children
         ) : (
           <>
-            <Icon name="lock" /> {threshold} guesses
+            <Icon name="lock" /> {remaining} {remaining === 1 ? "guess" : "guesses"}
           </>
         )}
       </div>
@@ -69,6 +70,7 @@ export function Hints({
   const firstUnlocked = finished || guesses >= HINT_THRESHOLDS.first;
   const secondUnlocked = finished || guesses >= HINT_THRESHOLDS.second;
   const second = SECOND_HINT[mode];
+  const until = (threshold: number) => Math.max(0, threshold - guesses);
 
   return (
     <div className="clue-card hints-card">
@@ -77,7 +79,7 @@ export function Hints({
           icon="tag"
           title="Nickname"
           unlocked={firstUnlocked}
-          threshold={HINT_THRESHOLDS.first}
+          remaining={until(HINT_THRESHOLDS.first)}
         >
           {answer.alias ? `"${answer.alias}"` : "—"}
         </HintTile>
@@ -86,7 +88,7 @@ export function Hints({
             icon="image"
             title="Portrait"
             unlocked={secondUnlocked}
-            threshold={HINT_THRESHOLDS.second}
+            remaining={until(HINT_THRESHOLDS.second)}
           >
             <Avatar character={answer} size={56} />
           </HintTile>
@@ -95,7 +97,7 @@ export function Hints({
             icon="swords"
             title="Fighting Style"
             unlocked={secondUnlocked}
-            threshold={HINT_THRESHOLDS.second}
+            remaining={until(HINT_THRESHOLDS.second)}
           >
             {answer.styles.join(", ")}
           </HintTile>
