@@ -1,12 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { CHARACTERS } from "@/data/characters";
 import type { ModeId } from "@/game/modes";
 import { eligibleCharacters, guessPool } from "@/game/pools";
 import { loadStats, loadStreak } from "@/game/progress";
 import { setSetting, useSettings } from "@/game/store";
 import { globalDayIndex } from "@/game/time";
+import {
+  exportData,
+  importData,
+  parseTransferCode,
+  summarize,
+  type ParseResult,
+} from "@/game/transfer";
 import { Modal, useNow } from "./Chrome";
+import { HINT_THRESHOLDS } from "./Clues";
 
 export function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const settings = useSettings();
@@ -78,8 +87,8 @@ export function StatsModal({
   const g = loadStreak(globalDayIndex(now));
   // There is no way to lose a round, so a win rate would read 100% forever. How many guesses it
   // took is the thing that actually moves.
-  const average = s.wins ? (s.totalGuesses / s.wins).toFixed(1) : "—";
-  const best = s.best === null ? "—" : String(s.best);
+  const average = s.wins ? (s.totalGuesses / s.wins).toFixed(1) : "-";
+  const best = s.best === null ? "-" : String(s.best);
   const maxDist = Math.max(1, ...BUCKETS.map((b) => s.distribution[b] || 0));
   const label = mode.charAt(0).toUpperCase() + mode.slice(1);
 
@@ -107,7 +116,7 @@ export function StatsModal({
           <div className="stat-label">Max Streak</div>
         </div>
       </div>
-      <div className="dist-title">Guess Distribution &mdash; {label} Daily</div>
+      <div className="dist-title">Guess Distribution - {label} Daily</div>
       {BUCKETS.map((b) => {
         const count = s.distribution[b] || 0;
         const pct = count ? Math.max(6, Math.round((count / maxDist) * 100)) : 0;
@@ -125,7 +134,177 @@ export function StatsModal({
           </div>
         );
       })}
+      <TransferData />
     </Modal>
+  );
+}
+
+function TransferData() {
+  const [view, setView] = useState<"closed" | "menu" | "export" | "import">("closed");
+  const [code, setCode] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [pasted, setPasted] = useState("");
+  const [checked, setChecked] = useState<ParseResult | null>(null);
+  const [error, setError] = useState("");
+
+  if (view === "closed") {
+    return (
+      <div className="transfer">
+        <button type="button" className="transfer-btn" onClick={() => setView("menu")}>
+          Transfer my data
+        </button>
+      </div>
+    );
+  }
+
+  const openExport = () => {
+    try {
+      setCode(exportData(window.localStorage));
+      setCopied(false);
+      setError("");
+      setView("export");
+    } catch {
+      setError("This browser is blocking storage, so there is nothing to export.");
+    }
+  };
+
+  const openImport = () => {
+    setPasted("");
+    setChecked(null);
+    setError("");
+    setView("import");
+  };
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+    } catch {
+      // No clipboard access: select the code so it can be copied by hand.
+      (document.getElementById("transfer-code") as HTMLTextAreaElement | null)?.select();
+    }
+  };
+
+  const replace = () => {
+    if (!checked?.ok) return;
+    try {
+      importData(window.localStorage, checked.keys);
+      window.location.reload();
+    } catch {
+      setError("This browser is blocking storage, so the import could not be saved.");
+    }
+  };
+
+  const back = (
+    <button type="button" className="transfer-btn subtle" onClick={() => setView("menu")}>
+      Back
+    </button>
+  );
+
+  return (
+    <div className="transfer">
+      <div className="transfer-title">Transfer my data</div>
+
+      {view === "menu" && (
+        <>
+          <p className="transfer-note">
+            Move your streak, stats and today&apos;s progress to another browser or device.
+          </p>
+          <div className="transfer-actions">
+            <button type="button" className="transfer-btn" onClick={openExport}>
+              Export
+            </button>
+            <button type="button" className="transfer-btn" onClick={openImport}>
+              Import
+            </button>
+          </div>
+        </>
+      )}
+
+      {view === "export" && (
+        <>
+          <p className="transfer-note">
+            Copy this code. On the other device, open Statistics, choose Transfer my data, then
+            Import, and paste it in.
+          </p>
+          <textarea
+            id="transfer-code"
+            className="transfer-code"
+            readOnly
+            rows={4}
+            value={code}
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <div className="transfer-actions">
+            <button type="button" className="transfer-btn" onClick={copy}>
+              {copied ? "Copied!" : "Copy code"}
+            </button>
+            {back}
+          </div>
+        </>
+      )}
+
+      {view === "import" && (
+        <>
+          <textarea
+            className="transfer-code"
+            rows={4}
+            placeholder="Paste your transfer code here"
+            value={pasted}
+            onChange={(e) => {
+              setPasted(e.target.value);
+              setChecked(null);
+            }}
+          />
+          {checked && !checked.ok && <p className="transfer-error">{checked.error}</p>}
+          {checked?.ok ? (
+            <TransferConfirm keys={checked.keys} onReplace={replace} onCancel={() => setChecked(null)} />
+          ) : (
+            <div className="transfer-actions">
+              <button
+                type="button"
+                className="transfer-btn"
+                disabled={!pasted.trim()}
+                onClick={() => setChecked(parseTransferCode(pasted))}
+              >
+                Check code
+              </button>
+              {back}
+            </div>
+          )}
+        </>
+      )}
+
+      {error && <p className="transfer-error">{error}</p>}
+    </div>
+  );
+}
+
+function TransferConfirm({
+  keys,
+  onReplace,
+  onCancel,
+}: {
+  keys: Record<string, string>;
+  onReplace: () => void;
+  onCancel: () => void;
+}) {
+  const s = summarize(keys);
+  return (
+    <>
+      <p className="transfer-note">
+        This code has {s.played} {s.played === 1 ? "game" : "games"} played and a {s.currentStreak}
+        -day streak (best {s.maxStreak}). Importing replaces the progress saved on this device.
+      </p>
+      <div className="transfer-actions">
+        <button type="button" className="transfer-btn danger" onClick={onReplace}>
+          Replace my progress
+        </button>
+        <button type="button" className="transfer-btn subtle" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -133,13 +312,14 @@ export function HelpModal({ open, onClose }: { open: boolean; onClose: () => voi
   return (
     <Modal open={open} onClose={onClose} title="How to Play">
       <p>
-        <strong>Classic</strong> &mdash; guess the character. Every guess compares Gender, Origin,
+        <strong>Classic</strong> - guess the character. Every guess compares Gender, Origin,
         Fighting Style, Saga, Height, Weight, Age, and Status against the answer.
       </p>
       <p>
-        Every mode has two hints. A nickname unlocks after 3 guesses, and after 6 you get a
-        portrait &mdash; a full giveaway. Splash Art shows the fighting style instead, since it
-        is already showing you the picture.
+        Every mode has two hints, which appear after your first wrong guess. A nickname unlocks
+        after {HINT_THRESHOLDS.first} guesses, and after {HINT_THRESHOLDS.second} you get a
+        portrait - a full giveaway. Unlocked hints stay hidden until you click them. Splash Art
+        shows the fighting style instead, since it is already showing you the picture.
       </p>
       <ul className="rules-list">
         <li>
@@ -155,22 +335,22 @@ export function HelpModal({ open, onClose }: { open: boolean; onClose: () => voi
         </li>
       </ul>
       <p>
-        <strong>Quote</strong> &mdash; guess the character from a line they say.
+        <strong>Quote</strong> - guess the character from a line they say.
       </p>
       <p>
-        <strong>Emoji</strong> &mdash; guess the character from an emoji clue. A wrong guess reveals
+        <strong>Emoji</strong> - guess the character from an emoji clue. A wrong guess reveals
         another emoji.
       </p>
       <p>
-        <strong>Splash Art</strong> &mdash; guess the character from their heavily blurred portrait.
+        <strong>Splash Art</strong> - guess the character from their heavily blurred portrait.
         A wrong guess sharpens the image.
       </p>
       <p>
-        <strong>Voice Lines</strong> &mdash; guess the character from a short audio clip. A wrong
+        <strong>Voice Lines</strong> - guess the character from a short audio clip. A wrong
         guess unlocks another clip.
       </p>
       <p>
-        Each mode has its own daily puzzle &mdash; same answer for everyone, and every mode resets
+        Each mode has its own daily puzzle - same answer for everyone, and every mode resets
         together at 12 AM UTC. Progress is saved automatically. Win to keep your streak alive.
       </p>
     </Modal>

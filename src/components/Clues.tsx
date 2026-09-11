@@ -11,7 +11,7 @@ export const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
  * Every mode reveals two hints as guesses mount. Splash already shows the portrait, so it
  * trades that second tile for the fighting style rather than giving the answer away outright.
  */
-export const HINT_THRESHOLDS = { first: 3, second: 6 };
+export const HINT_THRESHOLDS = { first: 6, second: 9 };
 
 type SecondHint = "portrait" | "styles";
 
@@ -23,36 +23,55 @@ const SECOND_HINT: Record<ModeId, SecondHint> = {
   voice: "portrait",
 };
 
+type HintSlot = "first" | "second";
+
 function HintTile({
   icon,
   title,
   unlocked,
   remaining,
-  children,
+  open,
+  onToggle,
 }: {
   icon: string;
   title: string;
   unlocked: boolean;
   /** Guesses still to go, so the tile counts down rather than restating the threshold. */
   remaining: number;
-  children: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
 }) {
-  return (
-    <div className={`hint-tile ${unlocked ? "unlocked" : "locked"}`}>
+  const head = (
+    <>
       <div className="hint-icon">
         <Icon name={icon} />
       </div>
       <div className="hint-title">{title}</div>
-      <div className="hint-body">
-        {unlocked ? (
-          children
-        ) : (
-          <>
-            <Icon name="lock" /> {remaining} {remaining === 1 ? "guess" : "guesses"}
-          </>
-        )}
+    </>
+  );
+  if (!unlocked) {
+    return (
+      <div className="hint-tile locked">
+        {head}
+        <div className="hint-body">
+          <Icon name="lock" /> {remaining} {remaining === 1 ? "guess" : "guesses"}
+        </div>
       </div>
-    </div>
+    );
+  }
+  // Unlocking only makes a hint available; the player still chooses whether to look. The tile
+  // swaps from a div to a button here, so it mounts fresh and its unlock animation plays.
+  return (
+    <button
+      type="button"
+      className={`hint-tile unlocked${open ? " open" : ""}`}
+      aria-expanded={open}
+      aria-controls="hint-reveal"
+      onClick={onToggle}
+    >
+      {head}
+      <div className="hint-body">{open ? "Click to hide" : "Click to reveal"}</div>
+    </button>
   );
 }
 
@@ -67,10 +86,27 @@ export function Hints({
   guesses: number;
   finished: boolean;
 }) {
+  const [open, setOpen] = useState<HintSlot | null>(null);
+  // Another mode or another day is another puzzle, so nothing stays revealed across it.
+  const puzzle = `${mode}:${answer.name}`;
+  const [openFor, setOpenFor] = useState(puzzle);
+  if (openFor !== puzzle) {
+    setOpenFor(puzzle);
+    setOpen(null);
+  }
+
+  // Nothing to help with until the player has missed once. A round is only ever finished by
+  // winning, so a finished round's last guess was the right one and does not count as a miss.
+  const wrongGuesses = finished ? guesses - 1 : guesses;
+  if (wrongGuesses < 1) return null;
+
   const firstUnlocked = finished || guesses >= HINT_THRESHOLDS.first;
   const secondUnlocked = finished || guesses >= HINT_THRESHOLDS.second;
   const second = SECOND_HINT[mode];
   const until = (threshold: number) => Math.max(0, threshold - guesses);
+  const toggle = (slot: HintSlot) => setOpen((current) => (current === slot ? null : slot));
+  const shown =
+    open === "first" && firstUnlocked ? "first" : open === "second" && secondUnlocked ? "second" : null;
 
   return (
     <div className="clue-card hints-card">
@@ -80,29 +116,30 @@ export function Hints({
           title="Nickname"
           unlocked={firstUnlocked}
           remaining={until(HINT_THRESHOLDS.first)}
-        >
-          {answer.alias ? `"${answer.alias}"` : "—"}
-        </HintTile>
-        {second === "portrait" ? (
-          <HintTile
-            icon="image"
-            title="Portrait"
-            unlocked={secondUnlocked}
-            remaining={until(HINT_THRESHOLDS.second)}
-          >
-            <Avatar character={answer} size={56} />
-          </HintTile>
-        ) : (
-          <HintTile
-            icon="swords"
-            title="Fighting Style"
-            unlocked={secondUnlocked}
-            remaining={until(HINT_THRESHOLDS.second)}
-          >
-            {answer.styles.join(", ")}
-          </HintTile>
-        )}
+          open={shown === "first"}
+          onToggle={() => toggle("first")}
+        />
+        <HintTile
+          icon={second === "portrait" ? "image" : "swords"}
+          title={second === "portrait" ? "Portrait" : "Fighting Style"}
+          unlocked={secondUnlocked}
+          remaining={until(HINT_THRESHOLDS.second)}
+          open={shown === "second"}
+          onToggle={() => toggle("second")}
+        />
       </div>
+      {shown && (
+        // Keyed by slot so switching from one hint to the other plays the entrance again.
+        <div id="hint-reveal" key={shown} className={`hint-reveal ${shown === "first" ? "left" : "right"}`}>
+          {shown === "first" ? (
+            <span className="hint-reveal-text">{answer.alias ? `"${answer.alias}"` : "-"}</span>
+          ) : second === "portrait" ? (
+            <Avatar character={answer} size={104} />
+          ) : (
+            <span className="hint-reveal-text">{answer.styles.join(", ")}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -133,7 +170,7 @@ export function EmojiClue({ answer, guesses, finished }: { answer: Character; gu
         ))}
       </div>
       <div className="emoji-hint">
-        {finished ? "" : `${revealed}/${total} revealed — a wrong guess reveals another`}
+        {finished ? "" : `${revealed}/${total} revealed - a wrong guess reveals another`}
       </div>
     </div>
   );
@@ -153,7 +190,7 @@ export function SplashClue({ answer, guesses, finished }: { answer: Character; g
         />
       </div>
       <div className="emoji-hint">
-        {finished ? "" : `Guess ${guesses + 1} — a wrong guess sharpens the image`}
+        {finished ? "" : `Guess ${guesses + 1} - a wrong guess sharpens the image`}
       </div>
     </div>
   );
@@ -237,7 +274,7 @@ export function VoiceClue({ answer, guesses, finished }: { answer: Character; gu
         })}
       </div>
       <div className="emoji-hint">
-        {finished ? "" : `${unlocked}/${clips.length} clips unlocked — a wrong guess unlocks another`}
+        {finished ? "" : `${unlocked}/${clips.length} clips unlocked - a wrong guess unlocks another`}
       </div>
     </div>
   );
