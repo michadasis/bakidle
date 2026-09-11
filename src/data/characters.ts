@@ -86,7 +86,6 @@ export const CHARACTERS: readonly Character[] = [
     image: "https://cdn.myanimelist.net/images/characters/5/371798.jpg" },
   { name: "Spec", alias: "The Unkillable", gender: "Male", origin: "United States", styles: ["Brute Force"], saga: "Most Evil Death Row Convicts Saga", height: 221, weight: 70, age: 97, status: "Alive",
     quote: "You cannot kill what already refuses to die.", emoji: ["🌴", "🔫", "😐", "⛓️"],
-    voiceClips: ["clips/spec.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/6/359234.jpg" },
   { name: "Jun Guevaru", alias: "The Guerrilla King", gender: "Male", origin: "South America", styles: ["Mukakure-ryuu Ninjutsu"], saga: "Great Prison Battle Saga", height: 180, weight: 78, age: 25, status: "Alive",
     quote: "The jungle raised me. It made me a king.", emoji: ["🌴", "👑", "🔫", "⛓️"],
