@@ -12,7 +12,7 @@ export const GAME_MODES: readonly GameMode[] = [
   { id: "classic", label: "Classic", icon: "grid", blurb: "Compare stats guess by guess" },
   { id: "quote", label: "Quote", icon: "quote", blurb: "Guess from a line they say" },
   { id: "emoji", label: "Emoji", icon: "smile", blurb: "Guess from an emoji clue" },
-  { id: "splash", label: "Splash Art", icon: "palette", blurb: "Guess from a blurred portrait" },
+  { id: "splash", label: "Splash Art", icon: "eye", blurb: "Guess from a blurred portrait" },
   { id: "voice", label: "Voice Lines", icon: "mic", blurb: "Guess from an audio clip" },
 ];
 
