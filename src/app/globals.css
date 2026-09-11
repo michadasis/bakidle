@@ -1491,6 +1491,60 @@ a.next-mode-btn:active,
 
 /* ---------- footer ---------- */
 
+footer p {
+  margin: 4px 0;
+}
+
+footer a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+footer a:hover {
+  color: var(--accent-2);
+  border-bottom-color: var(--accent-2);
+}
+
+/* ---------- privacy policy ---------- */
+
+/* Running text rather than a clue, so it reads left aligned and a little larger. */
+.clue-card.legal {
+  text-align: left;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.legal h2 {
+  margin: 22px 0 6px;
+  font-family: var(--display-font);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.legal strong {
+  color: var(--text);
+}
+
+.legal ul {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+
+.legal li {
+  margin: 4px 0;
+}
+
+.legal-updated {
+  margin-top: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 footer {
   margin-top: 40px;
   color: var(--muted);
