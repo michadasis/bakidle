@@ -130,11 +130,17 @@ export function Hints({
       </div>
       {shown && (
         // Keyed by slot so switching from one hint to the other plays the entrance again.
-        <div id="hint-reveal" key={shown} className={`hint-reveal ${shown === "first" ? "left" : "right"}`}>
+        <div
+          id="hint-reveal"
+          key={shown}
+          className={`hint-reveal ${shown === "first" ? "left" : "right"}${
+            shown === "second" && second === "portrait" ? " portrait" : ""
+          }`}
+        >
           {shown === "first" ? (
             <span className="hint-reveal-text">{answer.alias ? `"${answer.alias}"` : "-"}</span>
           ) : second === "portrait" ? (
-            <Avatar character={answer} size={104} />
+            <Avatar character={answer} />
           ) : (
             <span className="hint-reveal-text">{answer.styles.join(", ")}</span>
           )}

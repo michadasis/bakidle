@@ -738,14 +738,13 @@ h1::before {
 }
 
 /*
- * What a hint says, shown under the row in the same tile style, with a pointer up to the tile
- * that opened it. Zero width with a full min-width keeps a long fighting style from widening
- * the whole box.
+ * What a hint says opens in a bubble under the tile that holds it, the same width as that tile,
+ * with a pointer up to it. A full-width bar left a portrait stranded in the middle of empty panel
+ * while its pointer aimed at the tile on the right.
  */
 .hint-reveal {
   position: relative;
-  width: 0;
-  min-width: 100%;
+  width: calc(50% - 6px);
   margin-top: 14px;
   padding: 14px 12px;
   background: var(--panel-2);
@@ -759,10 +758,15 @@ h1::before {
 }
 
 /* Two stacked triangles: the ink one is the pointer's outline, the panel one its fill. */
+.hint-reveal.right {
+  margin-left: auto;
+}
+
 .hint-reveal::before,
 .hint-reveal::after {
   content: "";
   position: absolute;
+  left: 50%;
   transform: translateX(-50%);
   border-style: solid;
   border-color: transparent;
@@ -780,14 +784,18 @@ h1::before {
   border-bottom-color: var(--panel-2);
 }
 
-.hint-reveal.left::before,
-.hint-reveal.left::after {
-  left: calc(25% - 3px);
+/* The portrait is the six-guess giveaway, so it fills its bubble instead of sitting in a frame. */
+.hint-reveal.portrait {
+  padding: 8px;
 }
 
-.hint-reveal.right::before,
-.hint-reveal.right::after {
-  left: calc(75% + 3px);
+.hint-reveal.portrait .avatar {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 6px;
+  font-size: 3rem;
 }
 
 .hint-reveal-text {
