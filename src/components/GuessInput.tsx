@@ -6,6 +6,7 @@ import type { ModeId } from "@/game/modes";
 import { guessPool } from "@/game/pools";
 import type { Settings } from "@/game/settings";
 import { Avatar } from "./Avatar";
+import { Icon } from "./Icon";
 
 export function GuessInput({
   mode,
@@ -53,38 +54,56 @@ export function GuessInput({
     setHighlighted(-1);
   }
 
+  // The send button and the Enter key do the same thing: take the highlighted suggestion, else
+  // the first one, else whatever was typed.
+  function submitCurrent() {
+    const pick = highlighted >= 0 ? matches[highlighted] : matches[0];
+    submit(pick ? pick.name : query.trim());
+  }
+
   return (
     <>
       <div className="search-wrap">
-        <input
-          ref={inputRef}
-          id="guessInput"
-          type="text"
-          placeholder="Enter a character name..."
-          autoComplete="off"
-          value={query}
-          disabled={disabled}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setHighlighted(-1);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              setHighlighted((h) => Math.min(h + 1, matches.length - 1));
-            } else if (e.key === "ArrowUp") {
-              e.preventDefault();
-              setHighlighted((h) => Math.max(h - 1, 0));
-            } else if (e.key === "Enter") {
-              e.preventDefault();
-              const pick = highlighted >= 0 ? matches[highlighted] : matches[0];
-              submit(pick ? pick.name : query.trim());
-            } else if (e.key === "Escape") {
-              setQuery("");
+        <div className="search-row">
+          <input
+            ref={inputRef}
+            id="guessInput"
+            type="text"
+            placeholder="Enter a character name..."
+            autoComplete="off"
+            value={query}
+            disabled={disabled}
+            onChange={(e) => {
+              setQuery(e.target.value);
               setHighlighted(-1);
-            }
-          }}
-        />
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setHighlighted((h) => Math.min(h + 1, matches.length - 1));
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setHighlighted((h) => Math.max(h - 1, 0));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                submitCurrent();
+              } else if (e.key === "Escape") {
+                setQuery("");
+                setHighlighted(-1);
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="send-btn"
+            aria-label="Submit guess"
+            title="Submit guess"
+            disabled={disabled || !query.trim()}
+            onClick={submitCurrent}
+          >
+            <Icon name="play" filled />
+          </button>
+        </div>
         {matches.length > 0 && (
           <ul className="suggestions">
             {matches.map((c, i) => (
