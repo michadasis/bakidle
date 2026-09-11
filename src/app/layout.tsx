@@ -7,7 +7,7 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Bakidle — Daily Baki Character Guessing Game",
+  title: "Bakidle - Daily Baki Character Guessing Game",
   description: DESCRIPTION,
   keywords: [
     "Bakidle", "Baki", "Baki Hanma", "Baki the Grappler", "Baki quiz",
@@ -18,19 +18,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE,
-    title: "Bakidle — Daily Baki Character Guessing Game",
+    title: "Bakidle - Daily Baki Character Guessing Game",
     description: DESCRIPTION,
     siteName: "Bakidle",
   },
   twitter: {
     card: "summary",
-    title: "Bakidle — Daily Baki Character Guessing Game",
+    title: "Bakidle - Daily Baki Character Guessing Game",
     description:
       "Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Voice Lines.",
-  },
-  icons: {
-    icon:
-      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230f0b0b'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23d0342c' stroke-width='4'/%3E%3Ctext x='50' y='68' font-size='58' font-family='Arial Black,Arial,sans-serif' font-weight='900' fill='%23ff5a4e' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E",
   },
   other: { "theme-color": "#0a0a0a" },
 };

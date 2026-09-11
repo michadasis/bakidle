@@ -114,7 +114,7 @@ function cut(argv) {
 function init(argv) {
   const file = argv[0] ? resolve(argv[0]) : DEFAULT_MANIFEST;
   if (existsSync(file)) {
-    console.error(`${file} already exists — delete it first if you want a fresh scaffold`);
+    console.error(`${file} already exists - delete it first if you want a fresh scaffold`);
     process.exit(1);
   }
   const manifest = {
@@ -128,14 +128,14 @@ function init(argv) {
     clips: characterNames().map((character) => ({ character, source: "ep1", at: "00:00:00", len: 2.5 })),
   };
   writeFileSync(file, JSON.stringify(manifest, null, 2) + "\n");
-  console.log(`wrote ${file} — ${manifest.clips.length} rows, one per character`);
+  console.log(`wrote ${file} - ${manifest.clips.length} rows, one per character`);
   console.log("edit it, delete rows you don't need, then run: node tools/clips.mjs batch");
 }
 
 function batch(argv) {
   const file = argv[0] ? resolve(argv[0]) : DEFAULT_MANIFEST;
   if (!existsSync(file)) {
-    console.error(`no manifest at ${file} — run \`node tools/clips.mjs init\` first`);
+    console.error(`no manifest at ${file} - run \`node tools/clips.mjs init\` first`);
     process.exit(1);
   }
 
@@ -168,7 +168,7 @@ function batch(argv) {
     }
     const input = sources[row.source] || row.source;
     if (!input || !existsSync(input)) {
-      problems.push(`${where}: source not found — ${input || "(none given)"}`);
+      problems.push(`${where}: source not found - ${input || "(none given)"}`);
       continue;
     }
     if (row.at === undefined || row.len === undefined) {
@@ -220,7 +220,7 @@ function sync() {
 
     const anchor = src.indexOf(`{ name: "${name}",`);
     if (anchor === -1) {
-      console.warn(`could not locate "${name}" in data.js — left untouched`);
+      console.warn(`could not locate "${name}" in data.js - left untouched`);
       continue;
     }
     const end = objectSliceEnd(src, anchor);
@@ -267,7 +267,7 @@ function sync() {
   try {
     execFileSync(process.execPath, ["--check", probe], { stdio: ["ignore", "ignore", "inherit"] });
   } catch {
-    console.error(`rewrite produced invalid JS — data.js untouched, bad output left at ${probe}`);
+    console.error(`rewrite produced invalid JS - data.js untouched, bad output left at ${probe}`);
     process.exit(1);
   }
   unlinkSync(probe);

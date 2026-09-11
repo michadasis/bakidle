@@ -3,7 +3,7 @@ import { GAME_MODES } from "@/game/modes";
 
 const SITE = "https://bakidle.vercel.app";
 
-// Required by output: "export" — the sitemap is built once at build time, not per request.
+// Required by output: "export" - the sitemap is built once at build time, not per request.
 export const dynamic = "force-static";
 
 /**

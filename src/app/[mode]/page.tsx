@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!isModeId(mode)) return {};
   const m = modeById(mode);
   return {
-    title: `${m.label} — Bakidle`,
+    title: `Bakidle - ${m.label}`,
     description: `${m.blurb}. A daily Baki character guessing game.`,
     alternates: { canonical: `/${m.id}` },
   };

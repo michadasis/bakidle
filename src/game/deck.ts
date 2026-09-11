@@ -71,7 +71,7 @@ function modeDeck(modeId: ModeId, cycle: number, settings: Settings): Character[
       });
     // A card sharing a day with an earlier mode is swapped elsewhere in this same deck. The
     // whole cycle is in hand, so the swap can pick any slot rather than only the untouched
-    // tail, and swapping two positions leaves the deck a permutation — the mode still answers
+    // tail, and swapping two positions leaves the deck a permutation - the mode still answers
     // with every character exactly once before repeating.
     for (let slot = 0; slot < size; slot++) {
       if (!clashes(startDay + slot, deck[slot])) continue;
