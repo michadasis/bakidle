@@ -1554,6 +1554,19 @@ footer a:hover {
   border-bottom-color: var(--accent-2);
 }
 
+/* Yesterday's answer, between the guesses and the victory card. */
+.yesterday {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.yesterday span {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
 /* ---------- privacy policy ---------- */
 
 /* Running text rather than a clue, so it reads left aligned and a little larger. */

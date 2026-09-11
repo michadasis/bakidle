@@ -122,15 +122,26 @@ export function Game({ mode }: { mode: ModeId }) {
   // here: reopening a round already finished should leave the page where it opened.
   useEffect(() => {
     if (!justWon) return;
-    setJustWon(false);
-    const bring = () => bannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    const raf = requestAnimationFrame(() => requestAnimationFrame(bring));
-    return () => cancelAnimationFrame(raf);
+    // The flag is cleared after the scroll is asked for, not before: clearing it first re-runs
+    // this effect, and the cleanup then cancels the very frame that was going to scroll.
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => {
+        bannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setJustWon(false);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
   }, [justWon]);
 
   const streak = day === null ? 0 : loadStreak(day).currentStreak;
   const empty = pool.length === 0;
   const nextMode = day === null ? null : nextUnplayedMode(mode, day, settings);
+  // Yesterday's answer for this mode, drawn from the pool the player is currently on.
+  const yesterday = day === null || day <= 0 ? null : answerForDay(mode, day - 1, settings);
 
   return (
     <>
@@ -203,6 +214,12 @@ export function Game({ mode }: { mode: ModeId }) {
               </>
             ) : (
               <SimpleBoard guesses={guessed} answer={answer} />
+            )}
+
+            {yesterday && (
+              <p className="yesterday">
+                Yesterday&apos;s answer was <span>{yesterday.name}</span>
+              </p>
             )}
 
             {finished && (
