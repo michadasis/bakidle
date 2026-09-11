@@ -1202,13 +1202,19 @@ table#board {
   min-width: 760px;
 }
 
+/*
+ * A rule under each heading, one per category, sized to its own column by the cell spacing.
+ * It is painted as a background stripe rather than a border so the heading can sit clear above
+ * it and the row below can start clear of it: a border can only sit flush against the edge.
+ */
 table#board thead th {
   color: var(--muted);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
-  padding: 4px 6px;
+  padding: 4px 6px 18px;
+  background: linear-gradient(var(--border), var(--border)) left bottom 6px / 100% 2px no-repeat;
 }
 
 table#board td {
