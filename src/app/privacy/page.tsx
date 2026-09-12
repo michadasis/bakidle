@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       </Link>
 
       <div className="clue-card legal">
-        <p className="legal-updated">Last updated 12 September 2026</p>
+        <p className="legal-updated">Last updated 13 September 2026</p>
 
         <p>
           Bakidle is a free fan game. There is no account to create and no sign in, and the game
@@ -47,8 +47,24 @@ export default function PrivacyPage() {
           <li>No analytics, and no tracking or advertising code of any kind.</li>
           <li>No cookies are set by the game.</li>
           <li>No names, email addresses or any other personal details are asked for.</li>
-          <li>Nothing about how you play is sent off your device.</li>
+          <li>
+            Nothing about how you play is sent off your device, apart from the one counter below.
+          </li>
         </ul>
+
+        <h2>The solved counter</h2>
+        <p>
+          Each mode shows how many people have solved it today, and tells you where you came in.
+          That number has to be shared, so when you solve a mode the game tells the server one
+          thing: that this mode was solved today. It does not send your guesses, your times, your
+          statistics or anything that identifies you.
+        </p>
+        <p>
+          So that reloading the page does not count you twice, the server keeps a shortened one
+          way hash of your network address alongside the position you were given. It cannot be
+          turned back into your address, it is never shown to anyone, and it deletes itself after
+          two days. The counts themselves expire after three.
+        </p>
 
         <h2>Other services involved in loading the page</h2>
         <p>

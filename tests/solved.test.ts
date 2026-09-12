@@ -1,0 +1,32 @@
+import { describe, expect, it } from "vitest";
+import { formatCount, ordinal } from "@/game/solved";
+
+describe("wording the solved counters", () => {
+  it("gets the ordinal suffixes right, including the teens", () => {
+    const cases: [number, string][] = [
+      [1, "1st"],
+      [2, "2nd"],
+      [3, "3rd"],
+      [4, "4th"],
+      [11, "11th"],
+      [12, "12th"],
+      [13, "13th"],
+      [21, "21st"],
+      [22, "22nd"],
+      [23, "23rd"],
+      [101, "101st"],
+      [111, "111th"],
+      [112, "112th"],
+      [113, "113th"],
+      [1003, "1,003rd"],
+      [17493, "17,493rd"],
+    ];
+    for (const [n, want] of cases) expect(ordinal(n), String(n)).toBe(want);
+  });
+
+  it("separates thousands so a big count stays readable", () => {
+    expect(formatCount(7)).toBe("7");
+    expect(formatCount(1234)).toBe("1,234");
+    expect(formatCount(31239)).toBe("31,239");
+  });
+});

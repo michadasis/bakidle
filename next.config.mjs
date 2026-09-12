@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The game is entirely client-side and deploys as static files, exactly as it did before.
-  output: "export",
+  // The game itself is client-side, but the solved counter needs an endpoint of its own, and a
+  // static export cannot have one. Pages are still prerendered; only /api is served at runtime.
   images: { unoptimized: true },
   trailingSlash: false,
 };

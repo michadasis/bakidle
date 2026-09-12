@@ -7,6 +7,12 @@ export interface DailyRecord {
   guesses: string[];
   finished: boolean;
   won: boolean;
+  /**
+   * Where this player came in among everyone who solved the mode today. Written once, when the
+   * counter answers, so reopening a finished round shows the same position rather than a new
+   * one. Absent when the counter was unavailable, and it goes with the round when the day rolls.
+   */
+  rank?: number;
 }
 
 export function loadDaily(mode: ModeId, day: number, settings: Settings): DailyRecord | null {
