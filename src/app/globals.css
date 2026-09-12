@@ -1095,23 +1095,13 @@ h1::before {
   text-align: center;
 }
 
+/* Only takes room while it has something to say, rather than holding a blank line open. */
+.status-line:empty {
+  min-height: 0;
+  margin-bottom: 0;
+}
+
 /* ---------- legend ---------- */
-
-.legend {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
 
 .dot {
   width: 12px;
@@ -1367,12 +1357,23 @@ table#board td.wrong {
   font-style: italic;
 }
 
-/* How many people have solved this mode today, under the guess box and above the guesses. */
+/*
+ * How many people have solved this mode today, spaced the way LoLdle spaces it, measured off its
+ * own pages by letter edges: about 20px from the guess box to the text, then 14px to the first
+ * answer, or 30px to the column headings in Classic. The margins below are smaller than those
+ * figures because the line box already carries some space above and below the letters, and in
+ * Classic the table adds 10px of its own above the heading text. With no count it is not
+ * rendered at all, so a morning with nobody solved yet leaves no gap behind.
+ */
 .solved-count {
-  margin: 4px 0 10px;
+  margin: 2px 0 14px;
   color: var(--muted);
   font-size: 0.85rem;
   text-align: center;
+}
+
+.solved-count.before-table {
+  margin-bottom: 16px;
 }
 
 .solved-count span {

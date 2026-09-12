@@ -224,31 +224,15 @@ export function Game({ mode }: { mode: ModeId }) {
               onGuess={submit}
             />
 
-            {solvedCount !== null && solvedCount > 0 && (
-              <p className="solved-count">
+            {solvedCount ? (
+              <p className={`solved-count${mode === "classic" ? " before-table" : ""}`}>
                 <span>{formatCount(solvedCount)}</span>{" "}
                 {solvedCount === 1 ? "person has" : "people have"} already found out
               </p>
-            )}
+            ) : null}
 
             {mode === "classic" ? (
-              <>
-                <div className="legend">
-                  <span className="legend-item">
-                    <span className="dot correct" />
-                    Correct
-                  </span>
-                  <span className="legend-item">
-                    <span className="dot partial" />
-                    Close
-                  </span>
-                  <span className="legend-item">
-                    <span className="dot wrong" />
-                    Wrong
-                  </span>
-                </div>
-                <ClassicBoard guesses={guessed} answer={answer} />
-              </>
+              <ClassicBoard guesses={guessed} answer={answer} />
             ) : (
               <SimpleBoard guesses={guessed} answer={answer} />
             )}
