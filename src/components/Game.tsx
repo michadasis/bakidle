@@ -14,12 +14,13 @@ import {
   recordWin,
   saveDaily,
 } from "@/game/progress";
+import { fetchSolvedCount, formatCount, ordinal, reportSolved } from "@/game/solved";
 import { hydrateSettings, useSettings } from "@/game/store";
 import { purgeLegacyStorage } from "@/game/storage";
-import { globalDayIndex } from "@/game/time";
+import { formatCountdown, globalDayIndex, msUntilGlobalReset } from "@/game/time";
 import { Avatar } from "./Avatar";
 import { ClassicBoard, SimpleBoard } from "./Boards";
-import { Countdown, DayNumber, ModeRail, Toolbar } from "./Chrome";
+import { DayNumber, ModeRail, Toolbar, useNow } from "./Chrome";
 import { EmojiClue, Hints, QuoteClue, SplashClue, VoiceClue } from "./Clues";
 import { Confetti, type ConfettiHandle } from "./Confetti";
 import { GuessInput } from "./GuessInput";
@@ -42,6 +43,10 @@ export function Game({ mode }: { mode: ModeId }) {
   const [status, setStatus] = useState("");
   const [justWon, setJustWon] = useState(false);
   const [modal, setModal] = useState<null | "stats" | "settings" | "help">(null);
+  // How many people have solved this mode today, and where this player came in. Both stay
+  // null whenever the counter is unavailable, and the game plays the same without them.
+  const [solvedCount, setSolvedCount] = useState<number | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const confettiRef = useRef<ConfettiHandle>(null);
 
@@ -74,7 +79,19 @@ export function Game({ mode }: { mode: ModeId }) {
     setGuesses(saved?.guesses ?? []);
     setFinished(saved?.finished ?? false);
     setStatus("");
+    setRank(saved?.rank ?? null);
   }, [day, mode, settings]);
+
+  // The counter is per mode and per day rather than per settings: it answers how many people
+  // solved this mode today, which is the same question whichever pool a player is on.
+  useEffect(() => {
+    if (day === null) return;
+    const abort = new AbortController();
+    void fetchSolvedCount(mode, abort.signal).then((count) => {
+      if (count !== null) setSolvedCount(count);
+    });
+    return () => abort.abort();
+  }, [day, mode]);
 
   const guessed = useMemo(
     () => guesses.map((n) => CHARACTERS.find((c) => c.name === n)).filter(Boolean) as Character[],
@@ -112,6 +129,19 @@ export function Game({ mode }: { mode: ModeId }) {
         recordStreakWin(day);
         confettiRef.current?.fire();
         setJustWon(true);
+        // Decoration only: a counter that fails, or was never configured, leaves the win alone.
+        void reportSolved(mode).then((result) => {
+          if (typeof result.count === "number") setSolvedCount(result.count);
+          if (typeof result.rank === "number") {
+            setRank(result.rank);
+            saveDaily(mode, day, settings, {
+              guesses: next,
+              finished: true,
+              won: true,
+              rank: result.rank,
+            });
+          }
+        });
       }
     },
     [answer, day, finished, guesses, mode, settings]
@@ -122,22 +152,23 @@ export function Game({ mode }: { mode: ModeId }) {
   // here: reopening a round already finished should leave the page where it opened.
   useEffect(() => {
     if (!justWon) return;
-    // The flag is cleared after the scroll is asked for, not before: clearing it first re-runs
-    // this effect, and the cleanup then cancels the very frame that was going to scroll.
-    let inner = 0;
-    const outer = requestAnimationFrame(() => {
-      inner = requestAnimationFrame(() => {
-        bannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        setJustWon(false);
-      });
-    });
-    return () => {
-      cancelAnimationFrame(outer);
-      cancelAnimationFrame(inner);
-    };
-  }, [justWon]);
+    // The winning guess reveals one cell at a time, so the page waits for that to finish before
+    // travelling: Classic runs nine cells a quarter second apart at 0.55s each, the other modes
+    // reveal a single row. The flag is cleared after the scroll is asked for, not before, since
+    // clearing it first re-runs this effect and the cleanup cancels the pending frame.
+    const revealMs = mode === "classic" ? 2650 : 500;
+    // Scrolled straight from the timer rather than from an animation frame: a tab in the
+    // background pauses frames altogether, which would leave the page sitting where it was.
+    const timer = setTimeout(() => {
+      bannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setJustWon(false);
+    }, revealMs);
+    return () => clearTimeout(timer);
+  }, [justWon, mode]);
 
   const streak = day === null ? 0 : loadStreak(day).currentStreak;
+  // Only ticks once the round is over, which is the only place the countdown is shown.
+  const now = useNow(finished);
   const empty = pool.length === 0;
   const nextMode = day === null ? null : nextUnplayedMode(mode, day, settings);
   // Yesterday's answer for this mode, drawn from the pool the player is currently on.
@@ -158,7 +189,6 @@ export function Game({ mode }: { mode: ModeId }) {
         onSettings={() => setModal("settings")}
         onHelp={() => setModal("help")}
       />
-      <Countdown show={finished} />
 
       <div id="gameView">
         <Link href="/" className="back-btn">
@@ -193,6 +223,13 @@ export function Game({ mode }: { mode: ModeId }) {
               status={status}
               onGuess={submit}
             />
+
+            {solvedCount !== null && solvedCount > 0 && (
+              <p className="solved-count">
+                <span>{formatCount(solvedCount)}</span>{" "}
+                {solvedCount === 1 ? "person has" : "people have"} already found out
+              </p>
+            )}
 
             {mode === "classic" ? (
               <>
@@ -230,32 +267,54 @@ export function Game({ mode }: { mode: ModeId }) {
                 </div>
                 <div className="answer-name">{answer.name}</div>
                 <div className="answer-alias">{answer.alias ? `"${answer.alias}"` : ""}</div>
-                <p id="winTriesLine">
-                  Guessed in {guesses.length} {guesses.length === 1 ? "try" : "tries"}.
+
+                {rank !== null && (
+                  <p className="win-rank">
+                    You are the <span>{ordinal(rank)}</span> to find the answer today
+                  </p>
+                )}
+
+                <p className="win-tries">
+                  Number of tries: <span>{guesses.length}</span>
                 </p>
-                <div className="win-streak-wrap">
-                  {streak > 0 && (
-                    <span className="streak-badge">
-                      <span className="flame">
-                        <Icon name="flame" />
-                      </span>
-                      <span className="streak-count">{streak}</span>
-                    </span>
-                  )}
+
+                <button type="button" className="stats-btn" onClick={() => setModal("stats")}>
+                  <Icon name="stats" />
+                  <span>Stats</span>
+                </button>
+
+                <div className="win-countdown">
+                  <div className="win-countdown-label">Next answer in</div>
+                  <div className="win-countdown-time">
+                    {now === null ? "" : formatCountdown(msUntilGlobalReset(now))}
+                  </div>
+                  <div className="win-countdown-zone">Every mode resets at midnight UTC</div>
                 </div>
+
+                <hr className="win-divider" />
+
+                <div className="next-mode-label">{nextMode ? "Next mode:" : "Nothing left today:"}</div>
                 <div className="action-row">
                   {nextMode ? (
                     <Link className="next-mode-btn" href={`/${nextMode.id}`}>
                       <Icon name={nextMode.icon} />
-                      <span>{modeById(nextMode.id).label}</span>
+                      <span className="next-mode-text">
+                        <span className="next-mode-name">{modeById(nextMode.id).label}</span>
+                        <span className="next-mode-blurb">{modeById(nextMode.id).blurb}</span>
+                      </span>
                     </Link>
                   ) : (
                     <Link className="next-mode-btn" href="/">
                       <Icon name="chevronLeft" />
-                      <span>Back to Modes</span>
+                      <span className="next-mode-text">
+                        <span className="next-mode-name">Back to Modes</span>
+                        <span className="next-mode-blurb">Every mode is solved today</span>
+                      </span>
                     </Link>
                   )}
                 </div>
+
+                <ModeRail active={mode} />
               </div>
             )}
           </>

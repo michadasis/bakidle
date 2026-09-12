@@ -1117,12 +1117,6 @@ h1::before {
   text-align: center;
 }
 
-.guesses-count {
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin-bottom: 4px;
-}
-
 /* ---------- legend ---------- */
 
 .legend {
@@ -1395,9 +1389,155 @@ table#board td.wrong {
   font-style: italic;
 }
 
-#winTriesLine {
+/* How many people have solved this mode today, under the guess box and above the guesses. */
+.solved-count {
+  margin: 4px 0 10px;
   color: var(--muted);
   font-size: 0.85rem;
+  text-align: center;
+}
+
+.solved-count span {
+  color: var(--accent-2);
+  font-weight: 800;
+}
+
+.win-rank {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.win-rank span {
+  color: var(--accent-2);
+  font-weight: 800;
+}
+
+.win-tries {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.win-tries span {
+  color: var(--accent-2);
+  font-weight: 800;
+}
+
+/* Opens the same Statistics window as the toolbar, from where the win happened. */
+.stats-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-control);
+  cursor: pointer;
+  font-family: var(--display-font);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    transform 0.1s ease,
+    background 0.1s ease;
+}
+
+.stats-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.stats-btn:hover {
+  background: #2a2222;
+  transform: translateY(-1px);
+}
+
+.stats-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-press);
+}
+
+.win-countdown {
+  margin-top: 16px;
+}
+
+.win-countdown-label {
+  font-family: var(--display-font);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.win-countdown-time {
+  font-family: var(--display-font);
+  font-size: 2rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  min-height: 2.2rem;
+}
+
+.win-countdown-zone {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.win-divider {
+  width: 60%;
+  margin: 16px auto;
+  border: none;
+  border-top: 2px solid var(--border);
+}
+
+.next-mode-label {
+  font-family: var(--display-font);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.next-mode-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.next-mode-blurb {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.85;
+}
+
+/* The card ends on the thing to do next, so it pulses until it is taken. */
+.win-banner .next-mode-btn {
+  animation: next-mode-glow 1.9s ease-in-out infinite;
+}
+
+@keyframes next-mode-glow {
+  0%,
+  100% {
+    box-shadow: var(--shadow-control);
+  }
+  50% {
+    box-shadow:
+      var(--shadow-control),
+      0 0 0 4px rgba(255, 59, 47, 0.3);
+  }
+}
+
+.win-banner .mode-rail {
+  margin-top: 16px;
 }
 
 .win-streak-wrap:not(:empty) {
@@ -1450,12 +1590,14 @@ a.next-mode-btn:active,
   box-shadow: var(--shadow-press);
 }
 
+/* Sized to what it says rather than stretched across the card. */
 .next-mode-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  width: 100%;
+  gap: 12px;
+  width: auto;
+  padding: 10px 26px;
 }
 
 .next-mode-btn .icon {
@@ -1983,5 +2125,9 @@ footer {
   table#board td {
     animation: none;
     opacity: 1;
+  }
+
+  .win-banner .next-mode-btn {
+    animation: none;
   }
 }

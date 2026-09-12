@@ -125,9 +125,6 @@ export function GuessInput({
         )}
       </div>
       <div className="status-line">{status}</div>
-      <div className="guesses-count">
-        {guessed.length ? `${guessed.length} guess${guessed.length === 1 ? "" : "es"}` : ""}
-      </div>
     </>
   );
 }
