@@ -350,28 +350,6 @@ h1::before {
   letter-spacing: 0.05em;
 }
 
-/* Only rendered once today's puzzle is done - see shouldShowCountdown() in script.js. */
-.reset-timer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 0.7rem;
-  margin-top: 12px;
-  letter-spacing: 0.05em;
-}
-
-.reset-timer .reset-label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.reset-timer #resetCountdown {
-  font-variant-numeric: tabular-nums;
-  color: var(--accent-2);
-  font-weight: 600;
-}
-
 .streak-badge {
   display: inline-flex;
   align-items: center;

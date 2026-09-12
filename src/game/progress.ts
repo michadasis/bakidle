@@ -33,10 +33,6 @@ export function playableModes(settings: Settings) {
   return GAME_MODES.filter((m) => answerPool(m.id, settings).length > 0);
 }
 
-export function allModesFinishedToday(day: number, settings: Settings): boolean {
-  return playableModes(settings).every((m) => isModeFinished(m.id, day, settings));
-}
-
 /**
  * The first mode still unsolved today, read top to bottom in the same order the mode list
  * shows them. Skips the mode just finished and any with an empty pool. Null when nothing is

@@ -6,7 +6,7 @@ import { GAME_MODES, type ModeId } from "@/game/modes";
 import { answerPool } from "@/game/pools";
 import { isModeFinished } from "@/game/progress";
 import { useSettings } from "@/game/store";
-import { formatCountdown, globalDayIndex, msUntilGlobalReset } from "@/game/time";
+import { globalDayIndex } from "@/game/time";
 import { Icon } from "./Icon";
 
 /** Ticks once a second on the client only; the server has no meaningful "now". */
@@ -24,21 +24,6 @@ export function useNow(active = true): number | null {
 export function DayNumber() {
   const now = useNow();
   return <div className="day-number">{now === null ? "" : `Daily #${globalDayIndex(now) + 1}`}</div>;
-}
-
-/**
- * Only rendered when there is nothing left to play: inside a mode that means it is solved, and
- * on the mode list it means every mode is done.
- */
-export function Countdown({ show }: { show: boolean }) {
-  const now = useNow(show);
-  if (!show || now === null) return null;
-  return (
-    <div className="reset-timer">
-      <span className="reset-label">Next puzzle in</span>
-      <span id="resetCountdown">{formatCountdown(msUntilGlobalReset(now))}</span>
-    </div>
-  );
 }
 
 /** Quick switcher shown once a mode is picked. Solved modes carry a check. */

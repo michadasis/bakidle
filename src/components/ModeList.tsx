@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GAME_MODES } from "@/game/modes";
 import { answerPool } from "@/game/pools";
-import { allModesFinishedToday, isModeFinished, loadStreak } from "@/game/progress";
+import { isModeFinished, loadStreak } from "@/game/progress";
 import { hydrateSettings, useSettings } from "@/game/store";
 import { purgeLegacyStorage } from "@/game/storage";
 import { globalDayIndex } from "@/game/time";
-import { Countdown, DayNumber, Toolbar } from "./Chrome";
+import { DayNumber, Toolbar } from "./Chrome";
 import { Icon } from "./Icon";
 import { HelpModal, SettingsModal, StatsModal } from "./Modals";
 
@@ -27,8 +27,6 @@ export function ModeList() {
   }, []);
 
   const streak = day === null ? 0 : loadStreak(day).currentStreak;
-  // On the mode list the countdown only means something once nothing is left to play.
-  const allDone = day !== null && allModesFinishedToday(day, settings);
 
   return (
     <>
@@ -44,7 +42,6 @@ export function ModeList() {
         onSettings={() => setModal("settings")}
         onHelp={() => setModal("help")}
       />
-      <Countdown show={allDone} />
 
       <div className="mode-select">
         <div className="mode-list">
