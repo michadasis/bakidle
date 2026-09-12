@@ -8,7 +8,7 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Bakidle - Daily Baki Character Guessing Game",
+  title: "Bakidle",
   description: DESCRIPTION,
   keywords: [
     "Bakidle", "Baki", "Baki Hanma", "Baki the Grappler", "Baki quiz",
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE,
-    title: "Bakidle - Daily Baki Character Guessing Game",
+    title: "Bakidle",
     description: DESCRIPTION,
     siteName: "Bakidle",
   },
   twitter: {
     card: "summary",
-    title: "Bakidle - Daily Baki Character Guessing Game",
+    title: "Bakidle",
     description:
       "Guess the daily Baki Hanma character in five modes: Classic, Quote, Emoji, Splash Art, and Voice Lines.",
   },
