@@ -1,4 +1,5 @@
 import { isModeId, type ModeId } from "@/game/modes";
+import { isValidPlayerId } from "@/game/solved";
 import { globalDayIndex } from "@/game/time";
 
 /**
@@ -8,8 +9,13 @@ import { globalDayIndex } from "@/game/time";
  * to manage. Counting is a single INCR, which is exactly the operation this needs: no read then
  * write, so two people finishing at the same moment cannot take the same position.
  *
- * Nothing about a player is kept. A one way hash of the address is stored for two days purely so
- * that reloading the page does not count somebody twice, and it expires on its own.
+ * A browser is counted once per mode per day, recognised by a random id it keeps for itself.
+ * Counting by address instead made a phone and a laptop on one connection look like one person,
+ * and told the second device it had already counted. The address is still used, but only to cap
+ * how many solves one connection can add in a day, so clearing storage repeatedly gets nowhere.
+ *
+ * Nothing about a player is kept: the id is random and meaningless, and both it and the address
+ * are stored only as short one way hashes that expire on their own.
  */
 export const dynamic = "force-dynamic";
 
@@ -18,6 +24,8 @@ const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TO
 
 const COUNT_TTL = 60 * 60 * 24 * 3;
 const SOLVER_TTL = 60 * 60 * 24 * 2;
+/** Generous for a household of players across five modes, mean to anyone replaying all day. */
+const DAILY_CAP = 50;
 
 /** Without a store the endpoint says so and the game simply leaves the counters out. */
 function configured(): boolean {
@@ -36,21 +44,25 @@ async function redis(command: string): Promise<string | number | null> {
 
 const countKey = (day: number, mode: ModeId) => `bakidle:solved:${day}:${mode}`;
 const solverKey = (day: number, mode: ModeId, who: string) => `bakidle:solver:${day}:${mode}:${who}`;
+const capKey = (day: number, who: string) => `bakidle:cap:${day}:${who}`;
 
 function readMode(value: string | null): ModeId | null {
   return value && isModeId(value) ? value : null;
 }
 
-/** Truncated so it cannot be walked back to an address, and salted per day. */
-async function visitorHash(request: Request, day: number): Promise<string> {
-  const forwarded = request.headers.get("x-forwarded-for") ?? "";
-  const ip = forwarded.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
-  const data = new TextEncoder().encode(`${ip}:${day}:${process.env.SOLVE_SALT ?? "bakidle"}`);
+/** Truncated so it cannot be walked back to what went in, and salted when a salt is set. */
+async function shortHash(value: string): Promise<string> {
+  const data = new TextEncoder().encode(`${value}:${process.env.SOLVE_SALT ?? "bakidle"}`);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(digest)]
     .slice(0, 8)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+function address(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for") ?? "";
+  return forwarded.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
 }
 
 export async function GET(request: Request): Promise<Response> {
@@ -74,20 +86,34 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: "expected json" }, { status: 400 });
   }
-  const mode = readMode((body as { mode?: string })?.mode ?? null);
+  const payload = body as { mode?: string; player?: unknown };
+  const mode = readMode(payload?.mode ?? null);
   if (!mode) return Response.json({ error: "unknown mode" }, { status: 400 });
   if (!configured()) return Response.json({ count: null, rank: null });
 
   // The day is the server's, never the caller's, so a wrong clock cannot write to another day.
   const day = globalDayIndex();
   try {
-    const who = await visitorHash(request, day);
+    const fromAddress = await shortHash(`ip:${address(request)}:${day}`);
+    // A browser that cannot keep an id, in a private window say, falls back to its address.
+    const who = isValidPlayerId(payload.player)
+      ? await shortHash(`player:${payload.player}`)
+      : fromAddress;
+
     const seen = solverKey(day, mode, who);
     const held = await redis(`get/${seen}`);
     if (held !== null) {
       // Already counted today: give back the same position rather than counting again.
       const count = Number((await redis(`get/${countKey(day, mode)}`)) ?? 0);
       return Response.json({ count, rank: Number(held), counted: false });
+    }
+
+    // The cap is only spent on solves that actually count, so reloading a win costs nothing.
+    const used = Number(await redis(`incr/${capKey(day, fromAddress)}`));
+    if (used === 1) await redis(`expire/${capKey(day, fromAddress)}/${SOLVER_TTL}`);
+    if (used > DAILY_CAP) {
+      const count = Number((await redis(`get/${countKey(day, mode)}`)) ?? 0);
+      return Response.json({ count, rank: null, counted: false });
     }
 
     const rank = Number(await redis(`incr/${countKey(day, mode)}`));

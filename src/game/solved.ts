@@ -1,4 +1,5 @@
 import type { ModeId } from "./modes";
+import { STORAGE_VERSION } from "./storage";
 
 /** 1st, 2nd, 3rd, 4th, and the teens that break the pattern: 11th, 12th, 13th. */
 export function ordinal(n: number): string {
@@ -13,6 +14,33 @@ export function ordinal(n: number): string {
 /** Thousands separated, so five figures stay readable at a glance. */
 export function formatCount(n: number): string {
   return n.toLocaleString("en-US");
+}
+
+/**
+ * A random id kept in this browser, so a mode counts each browser once a day. It says nothing
+ * about who you are and is never shown; the counter only asks whether it has seen it today.
+ * Counting by network address instead would treat a phone and a laptop on one connection as the
+ * same person, and the same phone on mobile data as a stranger.
+ */
+export const PLAYER_KEY = `bakidle_player_${STORAGE_VERSION}`;
+
+export function isValidPlayerId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{12,64}$/.test(value);
+}
+
+export function playerId(): string | null {
+  try {
+    const existing = localStorage.getItem(PLAYER_KEY);
+    if (isValidPlayerId(existing)) return existing;
+    const bytes = new Uint8Array(12);
+    crypto.getRandomValues(bytes);
+    const made = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(PLAYER_KEY, made);
+    return made;
+  } catch {
+    // Storage blocked: the solve still counts, it just falls back to counting by address.
+    return null;
+  }
 }
 
 export interface SolvedResult {
@@ -41,7 +69,7 @@ export async function reportSolved(mode: ModeId): Promise<SolvedResult> {
     const res = await fetch("/api/solved", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode }),
+      body: JSON.stringify({ mode, player: playerId() }),
       cache: "no-store",
     });
     if (!res.ok) return { count: null, rank: null };

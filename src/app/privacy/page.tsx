@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       </Link>
 
       <div className="clue-card legal">
-        <p className="legal-updated">Last updated 13 September 2026</p>
+        <p className="legal-updated">Last updated 14 September 2026</p>
 
         <p>
           Bakidle is a free fan game. There is no account to create and no sign in, and the game
@@ -60,10 +60,16 @@ export default function PrivacyPage() {
           statistics or anything that identifies you.
         </p>
         <p>
-          So that reloading the page does not count you twice, the server keeps a shortened one
-          way hash of your network address alongside the position you were given. It cannot be
-          turned back into your address, it is never shown to anyone, and it deletes itself after
-          two days. The counts themselves expire after three.
+          So that reloading the page does not count you twice, your browser keeps a random id of
+          its own, and the server remembers that this id has counted today. The id is generated
+          on your device, means nothing on its own, identifies no one, and is never shown to
+          anybody. The server stores only a shortened one way hash of it.
+        </p>
+        <p>
+          Your network address is used for one thing: a limit on how many solves a single
+          connection can add in a day, so the counts cannot be inflated. That too is stored only
+          as a shortened one way hash, which cannot be turned back into an address. Both it and
+          the record of your id delete themselves after two days, and the counts after three.
         </p>
 
         <h2>Other services involved in loading the page</h2>
