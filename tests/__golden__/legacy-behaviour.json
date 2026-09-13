@@ -24341,7 +24341,7 @@
   {
    "name": "Spec",
    "height": 221,
-   "weight": 70,
+   "weight": 150,
    "age": 97,
    "saga": "Most Evil Death Row Convicts Saga",
    "grapplerOnly": false,
@@ -24351,7 +24351,7 @@
    "name": "Jun Guevaru",
    "height": 180,
    "weight": 78,
-   "age": 25,
+   "age": 21,
    "saga": "Great Prison Battle Saga",
    "grapplerOnly": false,
    "mangaOnly": false
@@ -24376,8 +24376,8 @@
   },
   {
    "name": "Hitoshi Kuriyagawa",
-   "height": 185,
-   "weight": 110,
+   "height": 150,
+   "weight": 50,
    "age": 38,
    "saga": "Underground Arena Saga",
    "grapplerOnly": true,
@@ -24422,7 +24422,7 @@
   {
    "name": "Musashi Miyamoto",
    "height": 180,
-   "weight": 68,
+   "weight": 85,
    "age": 32,
    "saga": "Musashi Saga",
    "grapplerOnly": false,
