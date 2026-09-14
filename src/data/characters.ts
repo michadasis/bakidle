@@ -143,7 +143,7 @@ export const CHARACTERS: readonly Character[] = [
     quote: "My body became a fortress long ago.", emoji: ["🇺🇸", "🎖️", "🤝", "👹"],
     voiceClips: ["clips/strydum.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/4/452970.jpg" },
-  { name: "Kozue Matsumoto", alias: "Baki's Girlfriend", gender: "Female", origin: "Japan", styles: ["Non-Fighter"], saga: "Original Saga", height: 160, weight: 45, age: 17, status: "Alive", grapplerOnly: true,
+  { name: "Kozue Matsumoto", alias: "Baki's Girlfriend", gender: "Female", origin: "Japan", styles: ["Non-Fighter"], saga: "Original Saga", height: 160, weight: 45, age: 17, status: "Alive",
     quote: "I just want him to come home in one piece.", emoji: ["🏫", "👧", "🏠", "💑"],
     voiceClips: ["clips/kozue-matsumoto.mp3", "clips/kozue-matsumoto-2.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/6/73968.jpg" },

@@ -5,3 +5,6 @@ out/
 next-env.d.ts
 # Local secrets: the counter store lives in Vercel, never in the repository.
 .env*.local
+
+# Personal clip-cutting manifest: hardcodes absolute paths to your own local media.
+clips.manifest.json
