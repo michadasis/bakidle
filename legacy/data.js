@@ -17,7 +17,8 @@ const SAGAS = [
   { id: "prison", name: "Great Prison Battle Saga", order: 5 },
   { id: "pickle", name: "Southeast Asia (Pickle) Saga", order: 6 },
   { id: "sonofogre", name: "Son of Ogre Saga", order: 7 },
-  { id: "musashi", name: "Musashi Saga", order: 8 }
+  { id: "musashi", name: "Musashi Saga", order: 8 },
+  { id: "sukune", name: "Sukune Arc", order: 9 }
 ];
 
 function sagaByName(name) {
@@ -72,7 +73,7 @@ const CHARACTERS = [
     quote: "One precise strike is worth a thousand wild ones.", emoji: ["🥋", "👬", "🧵", "✂️"],
     voiceClips: ["clips/koushou-shinogi.mp3"],
     image: "https://static.wikia.nocookie.net/baki/images/0/03/Kosho_profile.png" },
-  { name: "Atsushi Suedou", alias: "The Vale Tudo Karateka", gender: "Male", origin: "Japan", styles: ["Shinshinkai Karate"], saga: "Underground Arena Saga", height: 205, weight: 130, age: 25, status: "Alive", grapplerOnly: true,
+  { name: "Atsushi Suedou", alias: "The Vale Tudo Karateka", gender: "Male", origin: "Japan", styles: ["Shinshinkai Karate"], saga: "Underground Arena Saga", height: 205, weight: 130, age: 25, status: "Alive",
     quote: "Karate that can't kill isn't real karate.", emoji: ["🥋", "📏", "🏋️", "1️⃣"],
     voiceClips: ["clips/atsushi-suedou.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/14/363988.jpg" },
@@ -164,7 +165,7 @@ const CHARACTERS = [
   { name: "Kaiou Ryuu", alias: "The Hundred-Year Kaioh", gender: "Male", origin: "China", styles: ["Chinese Kenpo"], saga: "Great Raitaisai Saga", height: 200, weight: 100, age: 100, status: "Alive",
     quote: "A century of practice does not bend to a boy's enthusiasm.", emoji: ["🇨🇳", "👨‍🦲", "😶", "💯"],
     image: "https://static.wikia.nocookie.net/baki/images/f/f0/Ryu_profile.png" },
-  { name: "Iron Michael", alias: "The Boxing Champion", gender: "Male", origin: "United States", styles: ["Boxing"], saga: "Underground Arena Saga", height: 182, weight: 100, age: 30, status: "Alive", grapplerOnly: true,
+  { name: "Iron Michael", alias: "The Boxing Champion", gender: "Male", origin: "United States", styles: ["Boxing"], saga: "Underground Arena Saga", height: 182, weight: 100, age: 30, status: "Alive",
     quote: "Nobody in this building has ever been hit by a real champion.", emoji: ["🇺🇸", "🏆", "🥊", "🦾"],
     image: "https://static.wikia.nocookie.net/baki/images/9/96/Michael_profile.png" },
   { name: "Rob Robinson", alias: "The Kickboxing Ace", gender: "Male", origin: "United States", styles: ["Kickboxing"], saga: "Underground Arena Saga", height: 192, weight: 101, age: 30, status: "Alive", grapplerOnly: true,
@@ -290,9 +291,8 @@ const CHARACTERS = [
   { name: "Kyouichirou Sabu", alias: "Hitokiri Sabu", gender: "Male", origin: "Japan", styles: ["Kenjutsu"], saga: "Musashi Saga", height: 178, weight: 86, age: 63, status: "Alive",
     quote: "A blade does not need strength. It needs one honest moment.", emoji: ["👓", "👴", "🩸", "⚔️"],
     image: "https://static.wikia.nocookie.net/baki/images/f/f4/Kyouichirou_sabu.jpg" },
-  { name: "Nomi no Sukune II", alias: "Descendant of the Sumo God", gender: "Male", origin: "Japan", styles: ["Ancient Sumo"], saga: "Great Raitaisai Saga", height: 210, weight: 250, age: 25, status: "Alive", mangaOnly: true,
+  { name: "Nomi no Sukune II", alias: "Descendant of the Sumo God", gender: "Male", origin: "Japan", styles: ["Ancient Sumo"], saga: "Sukune Arc", height: 210, weight: 250, age: 25, status: "Alive", mangaOnly: true,
     quote: "My bloodline has thrown men since before your history began.", emoji: ["🤼", "⛩️", "⚫", "💎"],
-    voiceClips: ["clips/nomi-no-sukune-ii.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/7/480947.jpg" },
   { name: "Reihou", alias: "The Yokozuna", gender: "Male", origin: "Japan", styles: ["Sumo"], saga: "Musashi Saga", height: 195, weight: 161, age: 29, status: "Alive", mangaOnly: true,
     quote: "The dohyo taught me everything your ring never will.", emoji: ["🤼", "🇯🇵", "🏃", "👑"],

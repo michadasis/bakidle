@@ -16,7 +16,8 @@ export const SAGAS: readonly Saga[] = [
   { id: "prison", name: "Great Prison Battle Saga", order: 5 },
   { id: "pickle", name: "Southeast Asia (Pickle) Saga", order: 6 },
   { id: "sonofogre", name: "Son of Ogre Saga", order: 7 },
-  { id: "musashi", name: "Musashi Saga", order: 8 }
+  { id: "musashi", name: "Musashi Saga", order: 8 },
+  { id: "sukune", name: "Sukune Arc", order: 9 }
 ];
 
 export function sagaByName(name: string): Saga | undefined {
