@@ -8,3 +8,4 @@ next-env.d.ts
 
 # Personal clip-cutting manifest: hardcodes absolute paths to your own local media.
 clips.manifest.json
+.whisper-model/

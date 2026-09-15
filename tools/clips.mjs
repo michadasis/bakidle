@@ -71,12 +71,19 @@ function objectSliceEnd(src, start) {
 
 // Trim, normalize loudness, downmix to mono mp3. Short spoken clips do not need stereo
 // or a high bitrate, and the whole clips/ folder ships with the site.
+//
+// Explicitly maps the English audio stream by language tag. Without this, ffmpeg falls
+// back to whichever stream is flagged "default" in the container -- and on every source
+// used here (dual-audio Grappler rips, Netflix-era dual/multi-audio releases), that's
+// Japanese (or in a couple of files, Hindi), never English. Relying on ffmpeg's default
+// pick silently produced non-English clips for most of the roster before this was caught.
 function cutOne(input, start, len, name, index) {
   mkdirSync(CLIP_DIR, { recursive: true });
   const out = join(CLIP_DIR, clipName(slugify(name), index));
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error",
     "-ss", String(start), "-t", String(len), "-i", input,
+    "-map", "0:a:m:language:eng",
     "-vn", "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
     "-ar", "44100", "-ac", "1", "-b:a", "96k", "-f", "mp3", out,
   ], { stdio: ["ignore", "ignore", "pipe"] });
