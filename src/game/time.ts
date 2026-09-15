@@ -21,3 +21,34 @@ export function formatCountdown(ms: number): string {
   const s = String(totalSeconds % 60).padStart(2, "0");
   return `${h}:${m}:${s}`;
 }
+
+/* ---------- archive dates: every day index maps to exactly one UTC calendar date ---------- */
+
+export function dayIndexToUTCDate(day: number): Date {
+  return new Date(EPOCH_MS + day * DAY_MS);
+}
+
+/** YYYY-MM-DD, the URL-friendly form of a day index. */
+export function dayIndexToDateSlug(day: number): string {
+  return dayIndexToUTCDate(day).toISOString().slice(0, 10);
+}
+
+/** The inverse of dayIndexToDateSlug. Null for anything that is not a well-formed date. */
+export function dateSlugToDayIndex(slug: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(slug)) return null;
+  const ms = Date.parse(`${slug}T00:00:00Z`);
+  if (Number.isNaN(ms)) return null;
+  const day = Math.round((ms - EPOCH_MS) / DAY_MS);
+  // Round-trip check: catches slugs like 2026-02-30 that Date.parse quietly rolls into March.
+  return dayIndexToDateSlug(day) === slug ? day : null;
+}
+
+export function formatArchiveDate(day: number): string {
+  return dayIndexToUTCDate(day).toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}

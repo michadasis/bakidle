@@ -1,7 +1,7 @@
 import { GAME_MODES, type ModeId } from "./modes";
 import { answerPool } from "./pools";
 import type { Settings } from "./settings";
-import { dailyKey, readJson, statsKey, STREAK_KEY, writeJson } from "./storage";
+import { archiveKey, dailyKey, readJson, statsKey, STREAK_KEY, writeJson } from "./storage";
 
 export interface DailyRecord {
   guesses: string[];
@@ -45,6 +45,37 @@ export function nextUnplayedMode(mode: ModeId, day: number, settings: Settings) 
         m.id !== mode &&
         answerPool(m.id, settings).length > 0 &&
         !isModeFinished(m.id, day, settings)
+    ) ?? null
+  );
+}
+
+/* ---------- Replay: same shape as the daily record, deliberately kept off the real one ---------- */
+
+export function loadArchiveDaily(mode: ModeId, day: number, settings: Settings): DailyRecord | null {
+  return readJson<DailyRecord | null>(archiveKey(mode, day, settings), null);
+}
+
+export function saveArchiveDaily(
+  mode: ModeId,
+  day: number,
+  settings: Settings,
+  rec: DailyRecord
+): void {
+  writeJson(archiveKey(mode, day, settings), rec);
+}
+
+export function isArchiveModeFinished(mode: ModeId, day: number, settings: Settings): boolean {
+  const rec = loadArchiveDaily(mode, day, settings);
+  return !!rec && rec.finished;
+}
+
+export function nextUnplayedArchiveMode(mode: ModeId, day: number, settings: Settings) {
+  return (
+    GAME_MODES.find(
+      (m) =>
+        m.id !== mode &&
+        answerPool(m.id, settings).length > 0 &&
+        !isArchiveModeFinished(m.id, day, settings)
     ) ?? null
   );
 }

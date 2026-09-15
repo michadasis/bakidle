@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GAME_MODES, type ModeId } from "@/game/modes";
 import { answerPool } from "@/game/pools";
-import { isModeFinished } from "@/game/progress";
+import { isArchiveModeFinished, isModeFinished } from "@/game/progress";
 import { useSettings } from "@/game/store";
-import { globalDayIndex } from "@/game/time";
+import { dayIndexToDateSlug, formatArchiveDate, globalDayIndex } from "@/game/time";
 import { Icon } from "./Icon";
 
 /** Ticks once a second on the client only; the server has no meaningful "now". */
@@ -21,25 +21,51 @@ export function useNow(active = true): number | null {
   return now;
 }
 
-export function DayNumber() {
-  const now = useNow();
+/** Plain "Daily #N" for the live game; a dated Replay badge when browsing a past round. */
+export function DayNumber({ archiveDay }: { archiveDay?: number } = {}) {
+  const now = useNow(archiveDay === undefined);
+  if (archiveDay !== undefined) {
+    return (
+      <div className="day-number archive-day-number">
+        <span className="replay-tag">Replay</span>
+        {formatArchiveDate(archiveDay)}
+      </div>
+    );
+  }
   return <div className="day-number">{now === null ? "" : `Daily #${globalDayIndex(now) + 1}`}</div>;
 }
 
-/** Quick switcher shown once a mode is picked. Solved modes carry a check. */
-export function ModeRail({ active }: { active: ModeId }) {
+/**
+ * Quick switcher shown once a mode is picked. Solved modes carry a check. Passing archiveDay
+ * points every link at that Replay round instead of today's, and checks that round's own record.
+ */
+export function ModeRail({ active, archiveDay }: { active: ModeId; archiveDay?: number }) {
   const settings = useSettings();
-  const now = useNow();
+  const now = useNow(archiveDay === undefined);
   const today = now === null ? null : globalDayIndex(now);
+  const day = archiveDay ?? today;
+  const base = archiveDay === undefined ? "" : `/replay/${dayIndexToDateSlug(archiveDay)}`;
+  // archiveDay is a prop, so day is known on the very first render - server included, where
+  // localStorage does not exist. Gating the read on a post-mount flag keeps that first render
+  // (and the client's matching hydration pass) agreeing with the server: never checked yet.
+  // The live path stays safe without this too, since `now` starts null either way, but the flag
+  // costs nothing there and keeps both paths reasoning about hydration the same way.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   return (
     <nav className="mode-rail" aria-label="Switch game mode">
       {GAME_MODES.map((mode) => {
         const empty = answerPool(mode.id, settings).length === 0;
-        const done = today !== null && isModeFinished(mode.id, today, settings);
+        const done =
+          mounted &&
+          day !== null &&
+          (archiveDay === undefined
+            ? isModeFinished(mode.id, day, settings)
+            : isArchiveModeFinished(mode.id, day, settings));
         return (
           <Link
             key={mode.id}
-            href={`/${mode.id}`}
+            href={`${base}/${mode.id}`}
             className={`rail-btn${mode.id === active ? " active" : ""}`}
             title={mode.label}
             aria-label={mode.label}
@@ -56,6 +82,50 @@ export function ModeRail({ active }: { active: ModeId }) {
           </Link>
         );
       })}
+    </nav>
+  );
+}
+
+/**
+ * Previous/Next day plus a way out, shown on every Replay screen. mode is omitted on the
+ * day's mode-select page and present once a specific round is open, so the arrows always land
+ * on the same kind of page you're already looking at.
+ */
+export function ArchiveNav({
+  archiveDay,
+  today,
+  mode,
+}: {
+  archiveDay: number;
+  today: number;
+  mode?: ModeId;
+}) {
+  const suffix = mode ? `/${mode}` : "";
+  const hasPrev = archiveDay > 0;
+  const hasNext = archiveDay < today;
+  return (
+    <nav className="archive-nav" aria-label="Browse other days">
+      {hasPrev ? (
+        <Link href={`/replay/${dayIndexToDateSlug(archiveDay - 1)}${suffix}`} className="archive-nav-btn">
+          <Icon name="chevronLeft" /> Previous day
+        </Link>
+      ) : (
+        <span className="archive-nav-btn is-disabled">
+          <Icon name="chevronLeft" /> Previous day
+        </span>
+      )}
+      <Link href="/replay" className="archive-nav-btn archive-nav-all">
+        All days
+      </Link>
+      {hasNext ? (
+        <Link href={`/replay/${dayIndexToDateSlug(archiveDay + 1)}${suffix}`} className="archive-nav-btn">
+          Next day <Icon name="chevronRight" />
+        </Link>
+      ) : (
+        <span className="archive-nav-btn is-disabled">
+          Next day <Icon name="chevronRight" />
+        </span>
+      )}
     </nav>
   );
 }

@@ -14,6 +14,14 @@ export const STORAGE_VERSION = "v2";
 export const dailyKey = (mode: ModeId, day: number, settings: Settings) =>
   `bakidle_daily_${STORAGE_VERSION}_${mode}_${poolTag(settings)}_${day}`;
 
+/**
+ * Separate from dailyKey on purpose: a Replay round never touches a player's real daily record,
+ * and this prefix is deliberately excluded from purgeLegacyStorage's same-day cleanup below, so
+ * revisiting a past round later still shows it solved.
+ */
+export const archiveKey = (mode: ModeId, day: number, settings: Settings) =>
+  `bakidle_archive_${STORAGE_VERSION}_${mode}_${poolTag(settings)}_${day}`;
+
 export const statsKey = (mode: ModeId) => `bakidle_stats_${STORAGE_VERSION}_${mode}`;
 
 export const STREAK_KEY = `bakidle_streak_global_${STORAGE_VERSION}`;
