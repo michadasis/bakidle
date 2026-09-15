@@ -109,7 +109,7 @@ export function GuessInput({
             {matches.map((c, i) => (
               <li
                 key={c.name}
-                className={i === highlighted ? "highlighted" : undefined}
+                className={`suggestion-item${i === highlighted ? " highlighted" : ""}`}
                 // mousedown fires before the input blurs, so the click is not lost.
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -117,7 +117,7 @@ export function GuessInput({
                 }}
                 onMouseEnter={() => setHighlighted(i)}
               >
-                <Avatar character={c} size={26} />
+                <Avatar character={c} size={36} />
                 <span>{c.name}</span>
               </li>
             ))}
