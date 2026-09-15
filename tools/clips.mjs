@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CLIP_DIR = join(ROOT, "public", "clips");
-const DATA_FILE = join(ROOT, "data.js");
+const DATA_FILE = join(ROOT, "src", "data", "characters.ts");
 const DEFAULT_MANIFEST = join(ROOT, "clips.manifest.json");
 const CLIP_EXTS = [".mp3", ".ogg", ".wav", ".m4a"];
 
