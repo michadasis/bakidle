@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Character } from "@/data/characters";
+import { SecureImage } from "./SecureImage";
 
 function hashString(str: string): number {
   let h = 0;
@@ -18,8 +19,23 @@ function initialsFor(name: string): string {
 /**
  * Art is hotlinked, so a dead link is a real possibility. Falling back to generated initials
  * keeps the row readable rather than leaving a broken image icon in the grid.
+ *
+ * conceal is for a clue meant to be recognized by sight before the answer is confirmed - the
+ * portrait hint. Without it, this same component would hand the name away for free through
+ * `title` (a hover tooltip, no click needed) and `alt` (shown as text in place of the image on
+ * a slow connection) - both bypassing the entire point of a *visual* hint. conceal drops both,
+ * draws the picture on canvas the same way SplashClue does, and never falls back to
+ * name-derived initials either.
  */
-export function Avatar({ character, size }: { character: Character; size?: number }) {
+export function Avatar({
+  character,
+  size,
+  conceal,
+}: {
+  character: Character;
+  size?: number;
+  conceal?: boolean;
+}) {
   const [failed, setFailed] = useState(false);
   const style: React.CSSProperties & Record<string, string | number> = {
     ["--hue"]: hashString(character.name) % 360,
@@ -31,15 +47,27 @@ export function Avatar({ character, size }: { character: Character; size?: numbe
   }
   const showImage = character.image && !failed;
   return (
-    <div className="avatar" title={character.name} style={style}>
+    <div className="avatar" title={conceal ? undefined : character.name} style={style}>
       {showImage ? (
-        <img
-          className="avatar-img"
-          src={character.image}
-          alt={character.name}
-          loading="lazy"
-          onError={() => setFailed(true)}
-        />
+        conceal ? (
+          <SecureImage
+            src={character.image!}
+            size={size ?? 256}
+            className="avatar-img"
+            ariaLabel="Portrait hint"
+            onError={() => setFailed(true)}
+          />
+        ) : (
+          <img
+            className="avatar-img"
+            src={character.image}
+            alt={character.name}
+            loading="lazy"
+            onError={() => setFailed(true)}
+          />
+        )
+      ) : conceal ? (
+        "?"
       ) : (
         initialsFor(character.name)
       )}

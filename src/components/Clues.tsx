@@ -5,6 +5,7 @@ import type { Character } from "@/data/characters";
 import type { ModeId } from "@/game/modes";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { SecureImage } from "./SecureImage";
 
 export const SPLASH_BLUR_LEVELS = [20, 15, 11, 8, 5, 2, 0];
 /**
@@ -140,7 +141,7 @@ export function Hints({
           {shown === "first" ? (
             <span className="hint-reveal-text">{answer.alias ? `"${answer.alias}"` : "-"}</span>
           ) : second === "portrait" ? (
-            <Avatar character={answer} />
+            <Avatar character={answer} conceal />
           ) : (
             <span className="hint-reveal-text">{answer.styles.join(", ")}</span>
           )}
@@ -182,6 +183,13 @@ export function EmojiClue({ answer, guesses, finished }: { answer: Character; gu
   );
 }
 
+/** Must match .splash-frame's fixed size in globals.css. */
+const SPLASH_SIZE = 200;
+
+/**
+ * Drawn via SecureImage rather than an <img>, so the blur is baked into the pixels instead of a
+ * cosmetic CSS filter sitting in front of the clear picture underneath.
+ */
 export function SplashClue({ answer, guesses, finished }: { answer: Character; guesses: number; finished: boolean }) {
   const level = finished
     ? SPLASH_BLUR_LEVELS.length - 1
@@ -189,11 +197,14 @@ export function SplashClue({ answer, guesses, finished }: { answer: Character; g
   return (
     <div className="clue-card splash-clue">
       <div className="splash-frame">
-        <img
-          src={answer.image}
-          alt="Mystery character"
-          style={{ filter: `blur(${SPLASH_BLUR_LEVELS[level]}px)` }}
-        />
+        {answer.image && (
+          <SecureImage
+            src={answer.image}
+            size={SPLASH_SIZE}
+            blur={SPLASH_BLUR_LEVELS[level]}
+            ariaLabel="Mystery character"
+          />
+        )}
       </div>
       <div className="emoji-hint">
         {finished ? "" : `Guess ${guesses + 1} - a wrong guess sharpens the image`}
