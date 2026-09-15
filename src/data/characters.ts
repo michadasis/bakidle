@@ -141,6 +141,7 @@ export const CHARACTERS: readonly Character[] = [
     image: "https://cdn.myanimelist.net/images/characters/5/521334.jpg" },
   { name: "Strydum", alias: "The US Army General", gender: "Male", origin: "United States", styles: ["Military Fighting Style"], saga: "Great Raitaisai Saga", height: 195, weight: 100, age: 50, status: "Alive",
     quote: "This is no mere father-son quarrel. It rivals a fight between two nations.", quoteVerified: true, emoji: ["🇺🇸", "🎖️", "🤝", "👹"],
+    voiceClips: ["clips/strydum.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/4/452970.jpg" },
   { name: "Kozue Matsumoto", alias: "Baki's Girlfriend", gender: "Female", origin: "Japan", styles: ["Non-Fighter"], saga: "Original Saga", height: 160, weight: 45, age: 17, status: "Alive",
     quote: "No matter how much you change, you will never change.", quoteVerified: true, emoji: ["🏫", "👧", "🏠", "💑"],
