@@ -17,10 +17,31 @@ import {
 import { Modal, useNow } from "./Chrome";
 import { HINT_THRESHOLDS } from "./Clues";
 
-export function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+type PoolSettingKey = "modernOnly" | "includeMangaOnly";
+
+/**
+ * midRound flags a round already in progress: Modern Era Only and All Characters keep entirely
+ * separate daily assignments (see poolTag), so flipping either toggle here doesn't just add or
+ * remove names from the search - it can swap today's answer out from under an open guess.
+ */
+export function SettingsModal({
+  open,
+  onClose,
+  midRound,
+}: {
+  open: boolean;
+  onClose: () => void;
+  midRound?: boolean;
+}) {
   const settings = useSettings();
   const eligible = eligibleCharacters(settings).length;
   const classic = guessPool("classic", settings).length;
+  const [pending, setPending] = useState<{ key: PoolSettingKey; value: boolean } | null>(null);
+
+  const requestToggle = (key: PoolSettingKey, value: boolean) => {
+    if (midRound) setPending({ key, value });
+    else setSetting(key, value);
+  };
 
   return (
     <Modal open={open} onClose={onClose} title="Settings">
@@ -37,7 +58,7 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
           id="modernOnlyToggle"
           className="setting-switch"
           checked={settings.modernOnly}
-          onChange={(e) => setSetting("modernOnly", e.target.checked)}
+          onChange={(e) => requestToggle("modernOnly", e.target.checked)}
         />
         <span className="setting-track" aria-hidden="true" />
       </label>
@@ -56,10 +77,35 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
           id="mangaOnlyToggle"
           className="setting-switch"
           checked={settings.includeMangaOnly}
-          onChange={(e) => setSetting("includeMangaOnly", e.target.checked)}
+          onChange={(e) => requestToggle("includeMangaOnly", e.target.checked)}
         />
         <span className="setting-track" aria-hidden="true" />
       </label>
+
+      {pending && (
+        <div className="transfer">
+          <p className="transfer-error">
+            You&apos;re mid-round. All Characters and Modern Era Only run separate daily puzzles,
+            so switching now changes today&apos;s answer, not just who you can search for - this
+            round will restart on the new pool.
+          </p>
+          <div className="transfer-actions">
+            <button
+              type="button"
+              className="transfer-btn"
+              onClick={() => {
+                setSetting(pending.key, pending.value);
+                setPending(null);
+              }}
+            >
+              Switch and restart
+            </button>
+            <button type="button" className="transfer-btn subtle" onClick={() => setPending(null)}>
+              Never mind
+            </button>
+          </div>
+        </div>
+      )}
 
       <p className="settings-note">
         {eligible} of {CHARACTERS.length} characters are in play. Classic uses the {classic} with a

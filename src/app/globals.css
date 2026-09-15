@@ -631,7 +631,8 @@ h1::before {
   color: var(--accent-2);
 }
 
-.archive-nav-btn.is-disabled {
+.archive-nav-btn.is-disabled,
+.next-mode-btn.is-disabled {
   opacity: 0.35;
   pointer-events: none;
 }
@@ -1043,15 +1044,14 @@ h1::before {
   border: 2px solid var(--border);
 }
 
-.splash-frame img {
+/* The blur is baked into the canvas's own pixels (see SplashClue), not a CSS filter, so an
+   image element never sits in the DOM with the clear picture behind a cosmetic blur. object-fit
+   has no canvas equivalent either - that crop is done by hand in the draw call instead. */
+.splash-frame canvas {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top center;
   display: block;
-  filter: blur(20px);
   transform: scale(1.15);
-  transition: filter 0.4s ease;
 }
 
 .voice-play-btn {
@@ -1698,8 +1698,9 @@ table#board td.wrong {
   opacity: 0.85;
 }
 
-/* The card ends on the thing to do next, so it pulses until it is taken. */
-.win-banner .next-mode-btn {
+/* The card ends on the thing to do next, so it pulses until it is taken. A disabled day-hop
+   button (already at day 0 or today) is never "the thing to do next". */
+.win-banner .next-mode-btn:not(.is-disabled) {
   animation: next-mode-glow 1.9s ease-in-out infinite;
 }
 
@@ -1735,9 +1736,11 @@ table#board td.wrong {
   flex-wrap: wrap;
 }
 
-/* Every text button shares one look: accent fill, ink border, display type, a hard shadow. */
+/* Every text button shares one look: accent fill, ink border, display type, a hard shadow.
+   Unscoped from `a` so a disabled day-hop button (rendered as a span, see .is-disabled) still
+   picks it up. */
 .action-row button,
-a.next-mode-btn,
+.next-mode-btn,
 .transfer-btn {
   background: var(--accent);
   color: var(--text);

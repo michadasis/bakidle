@@ -32,12 +32,14 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
   }, [isArchive]);
 
   // "Today" is only known once the clock has been read on the client, so a Replay date outside
-  // [0, today] - typically someone editing the URL by hand - can only be caught here, not on the
-  // server. A future date would otherwise reveal that day's answer early, so this redirects
-  // rather than merely clamping the display.
+  // [0, today) - typically someone editing the URL by hand - can only be caught here, not on the
+  // server. Today itself is excluded: it is not a past day yet, it is the live puzzle, so it
+  // sends the same visitor to the live page rather than to the archive picker. A future date
+  // would otherwise reveal that day's answer early, so this redirects rather than merely
+  // clamping the display.
   useEffect(() => {
     if (!isArchive || today === null) return;
-    if (archiveDay < 0 || archiveDay > today) router.replace("/replay");
+    if (archiveDay < 0 || archiveDay >= today) router.replace("/");
   }, [isArchive, archiveDay, today, router]);
 
   const day = isArchive ? archiveDay : today;

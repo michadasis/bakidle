@@ -23,6 +23,7 @@ import { hydrateSettings, useSettings } from "@/game/store";
 import { purgeLegacyStorage } from "@/game/storage";
 import {
   dayIndexToDateSlug,
+  formatArchiveDate,
   formatCountdown,
   globalDayIndex,
   msUntilGlobalReset,
@@ -89,11 +90,12 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
   }, [isArchive]);
 
   // Same reasoning as the mode-select screen: an out-of-range Replay date can only be caught
-  // once "today" is known client-side, and a future date must redirect rather than render, since
-  // rendering it even briefly would hand out that day's answer early.
+  // once "today" is known client-side, and today itself is not a past day yet, so it and
+  // anything later send the visitor to the live page rather than rendering the archive around
+  // an answer that is still today's live one.
   useEffect(() => {
     if (!isArchive || today === null) return;
-    if (archiveDay < 0 || archiveDay > today) router.replace("/replay");
+    if (archiveDay < 0 || archiveDay >= today) router.replace("/");
   }, [isArchive, archiveDay, today, router]);
 
   const pool = answerPool(mode, settings);
@@ -218,6 +220,11 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
         : nextUnplayedMode(mode, day, settings);
   // Yesterday's answer for this mode, drawn from the pool the player is currently on.
   const yesterday = day === null || day <= 0 ? null : answerForDay(mode, day - 1, settings);
+  // Bounds for the victory card's day-hop buttons, shown once every mode is solved for this
+  // Replay day: never before day 0, never as far as today - today is the live puzzle, not an
+  // archived one.
+  const hasPrevDay = isArchive && archiveDay! > 0;
+  const hasNextDay = isArchive && today !== null && archiveDay! < today - 1;
 
   return (
     <>
@@ -336,7 +343,11 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
                 <hr className="win-divider" />
 
                 <div className="next-mode-label">
-                  {nextMode ? "Next mode:" : isArchive ? "Nothing left this day:" : "Nothing left today:"}
+                  {nextMode
+                    ? "Next mode:"
+                    : isArchive
+                      ? "Every mode is solved for this day:"
+                      : "Nothing left today:"}
                 </div>
                 <div className="action-row">
                   {nextMode ? (
@@ -354,19 +365,55 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
                         <span className="next-mode-blurb">{modeById(nextMode.id).blurb}</span>
                       </span>
                     </Link>
+                  ) : isArchive ? (
+                    <>
+                      {hasPrevDay ? (
+                        <Link
+                          className="next-mode-btn"
+                          href={`/replay/${dayIndexToDateSlug(archiveDay! - 1)}/${mode}`}
+                        >
+                          <Icon name="chevronLeft" />
+                          <span className="next-mode-text">
+                            <span className="next-mode-name">Previous day</span>
+                            <span className="next-mode-blurb">{formatArchiveDate(archiveDay! - 1)}</span>
+                          </span>
+                        </Link>
+                      ) : (
+                        <span className="next-mode-btn is-disabled">
+                          <Icon name="chevronLeft" />
+                          <span className="next-mode-text">
+                            <span className="next-mode-name">Previous day</span>
+                            <span className="next-mode-blurb">This is day 0</span>
+                          </span>
+                        </span>
+                      )}
+                      {hasNextDay ? (
+                        <Link
+                          className="next-mode-btn"
+                          href={`/replay/${dayIndexToDateSlug(archiveDay! + 1)}/${mode}`}
+                        >
+                          <span className="next-mode-text">
+                            <span className="next-mode-name">Next day</span>
+                            <span className="next-mode-blurb">{formatArchiveDate(archiveDay! + 1)}</span>
+                          </span>
+                          <Icon name="chevronRight" />
+                        </Link>
+                      ) : (
+                        <span className="next-mode-btn is-disabled">
+                          <span className="next-mode-text">
+                            <span className="next-mode-name">Next day</span>
+                            <span className="next-mode-blurb">This is today</span>
+                          </span>
+                          <Icon name="chevronRight" />
+                        </span>
+                      )}
+                    </>
                   ) : (
-                    <Link
-                      className="next-mode-btn"
-                      href={isArchive ? `/replay/${dayIndexToDateSlug(archiveDay!)}` : "/"}
-                    >
+                    <Link className="next-mode-btn" href="/">
                       <Icon name="chevronLeft" />
                       <span className="next-mode-text">
-                        <span className="next-mode-name">
-                          {isArchive ? "Back to this day" : "Back to Modes"}
-                        </span>
-                        <span className="next-mode-blurb">
-                          {isArchive ? "Every mode is solved for this day" : "Every mode is solved today"}
-                        </span>
+                        <span className="next-mode-name">Back to Modes</span>
+                        <span className="next-mode-blurb">Every mode is solved today</span>
                       </span>
                     </Link>
                   )}
@@ -380,7 +427,11 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
       </div>
 
       <Confetti ref={confettiRef} />
-      <SettingsModal open={modal === "settings"} onClose={() => setModal(null)} />
+      <SettingsModal
+        open={modal === "settings"}
+        onClose={() => setModal(null)}
+        midRound={guesses.length > 0 && !finished}
+      />
       <StatsModal open={modal === "stats"} onClose={() => setModal(null)} mode={mode} />
       <HelpModal open={modal === "help"} onClose={() => setModal(null)} />
     </>

@@ -102,7 +102,9 @@ export function ArchiveNav({
 }) {
   const suffix = mode ? `/${mode}` : "";
   const hasPrev = archiveDay > 0;
-  const hasNext = archiveDay < today;
+  // today itself is the live puzzle, not an archived day, so the last day this can step to is
+  // today - 1.
+  const hasNext = archiveDay < today - 1;
   return (
     <nav className="archive-nav" aria-label="Browse other days">
       {hasPrev ? (

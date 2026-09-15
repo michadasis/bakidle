@@ -32,7 +32,9 @@ export function ArchiveList() {
   }, []);
 
   const streak = today === null ? 0 : loadStreak(today).currentStreak;
-  const days = today === null ? [] : Array.from({ length: today + 1 }, (_, i) => today - i);
+  // today itself is excluded: it is the live puzzle, not a past day yet. Empty once today is 0,
+  // since day 0 launched today and has no predecessor to replay.
+  const days = today === null ? [] : Array.from({ length: today }, (_, i) => today - 1 - i);
 
   return (
     <>
@@ -63,6 +65,10 @@ export function ArchiveList() {
             touch your streak or stats.
           </p>
         </div>
+
+        {today !== null && days.length === 0 && (
+          <p className="archive-blurb">Day 0 launched today - there is nothing to replay yet.</p>
+        )}
 
         <div className="archive-list">
           {days.map((day) => {
