@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { BfcacheGuard } from "@/components/BfcacheGuard";
 import { Footer } from "@/components/Footer";
 
 const SITE = "https://bakidle.vercel.app";
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <BfcacheGuard />
         {children}
         <Footer />
       </body>
