@@ -90,7 +90,6 @@ const CHARACTERS = [
     image: "https://cdn.myanimelist.net/images/characters/6/359234.jpg" },
   { name: "Jun Guevaru", alias: "The Guerrilla King", gender: "Male", origin: "South America", styles: ["Mukakure-ryuu Ninjutsu"], saga: "Great Prison Battle Saga", height: 180, weight: 78, age: 21, status: "Alive",
     quote: "The jungle raised me. It made me a king.", emoji: ["🌴", "🙌", "🔫", "⭐"],
-    voiceClips: ["clips/guevaru.mp3"],
     image: "https://cdn.myanimelist.net/images/characters/10/563593.jpg" },
   { name: "Mount Toba", alias: "The Giant Devil", gender: "Male", origin: "Japan", styles: ["Pro Wrestling"], saga: "Underground Arena Saga", height: 209, weight: 150, age: 50, status: "Alive", grapplerOnly: true,
     quote: "Sumo was never just about size.", emoji: ["🤼", "📏", "🗻", "😈"],
