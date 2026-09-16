@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_VERSION, STREAK_KEY, statsKey } from "@/game/storage";
+import { PLAYER_KEY } from "@/game/solved";
 import {
   exportData,
   importData,
@@ -69,6 +70,29 @@ describe("transferring progress between devices", () => {
 
   it("summarises what a code holds before anything is replaced", () => {
     expect(summarize(mine)).toEqual({ played: 15, currentStreak: 5, maxStreak: 9 });
+  });
+
+  it("carries progress from a store that also holds this browser's solved-counter id", () => {
+    // PLAYER_KEY sits in the same localStorage as everyone's real progress, is plain hex rather
+    // than JSON, and used to make exportData/parseTransferCode choke on it for any player who
+    // had ever solved a mode.
+    const from = new FakeStore({ ...mine, [PLAYER_KEY]: "3fa94c0e1b2d7a8e9f0c1d2e" });
+    const parsed = parseTransferCode(exportData(from));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.keys).toEqual(mine);
+
+    // The id is the sending browser's own, not something to hand to another device.
+    const to = new FakeStore({ [PLAYER_KEY]: "aaaaaaaaaaaaaaaaaaaaaaaa" });
+    importData(to, parsed.keys);
+    expect(to.dump()).toEqual({ ...mine, [PLAYER_KEY]: "aaaaaaaaaaaaaaaaaaaaaaaa" });
+  });
+
+  it("accepts an older code that still carries PLAYER_KEY, and drops it", () => {
+    const wrap = (payload: unknown) =>
+      "BAKIDLE1:" + Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
+    const code = wrap({ v: 1, keys: { ...mine, [PLAYER_KEY]: "3fa94c0e1b2d7a8e9f0c1d2e" } });
+    expect(parseTransferCode(code)).toEqual({ ok: true, keys: mine });
   });
 
   it("refuses anything that is not an intact code from this build", () => {

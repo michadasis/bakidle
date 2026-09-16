@@ -1,3 +1,4 @@
+import { PLAYER_KEY } from "./solved";
 import { STORAGE_VERSION, STREAK_KEY } from "./storage";
 
 /**
@@ -23,9 +24,14 @@ interface Payload {
   keys: Record<string, string>;
 }
 
-/** Keys the current build reads. Older versions are purged on boot, so they are not carried. */
+/**
+ * Keys the current build reads. Older versions are purged on boot, so they are not carried.
+ * PLAYER_KEY is excluded on purpose: it identifies this browser to the solved counter, not this
+ * player's progress, and the receiving device already has (or will make) its own.
+ */
 export function isTransferableKey(key: string): boolean {
   return (
+    key !== PLAYER_KEY &&
     key.startsWith("bakidle_") &&
     (key.includes(`_${STORAGE_VERSION}_`) || key.endsWith(`_${STORAGE_VERSION}`))
   );
@@ -79,6 +85,9 @@ export function parseTransferCode(code: string): ParseResult {
 
   const keys: Record<string, string> = {};
   for (const [key, value] of Object.entries(p.keys)) {
+    // Codes exported by the live build carry this too (see isTransferableKey); drop it rather
+    // than reject the whole code, or every player who had ever solved a mode gets DAMAGED.
+    if (key === PLAYER_KEY) continue;
     // Only ever write keys this build owns, whatever a code claims to contain.
     if (!isTransferableKey(key) || typeof value !== "string") {
       return { ok: false, error: "That code contains data Bakidle doesn't recognise." };
@@ -116,7 +125,9 @@ export function summarize(keys: Record<string, string>): {
 export function importData(store: KeyValueStore, keys: Record<string, string>): void {
   for (let i = store.length - 1; i >= 0; i--) {
     const key = store.key(i);
-    if (key && key.startsWith("bakidle_")) store.removeItem(key);
+    // PLAYER_KEY identifies this browser to the solved counter, not the player's progress: it
+    // is never part of `keys` (see isTransferableKey), and this device keeps its own.
+    if (key && key.startsWith("bakidle_") && key !== PLAYER_KEY) store.removeItem(key);
   }
   for (const [key, value] of Object.entries(keys)) store.setItem(key, value);
 }
