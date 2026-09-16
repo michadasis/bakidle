@@ -40,13 +40,15 @@
 a.back-btn,
 a.mode-item,
 a.next-mode-btn,
-a.rail-btn {
+a.rail-btn,
+a.other-games-item {
   text-decoration: none;
 }
 
 /* Only where the class does not set a colour of its own, or this would win on specificity. */
 a.mode-item,
-a.next-mode-btn {
+a.next-mode-btn,
+a.other-games-item {
   color: inherit;
 }
 
@@ -543,6 +545,69 @@ h1::before {
 }
 
 .mode-item:hover .mode-item-arrow {
+  color: var(--accent-2);
+}
+
+/* ---------- other games ---------- */
+/* Shape borrowed from Loldle's own "play our other games" hub: a dark pill holding a row of
+   icon-over-name items with no card around each one. Colors are Bakidle's own (--panel/--ink,
+   the same border/shadow every other card on the page uses) rather than copied from theirs. */
+
+.other-games {
+  width: var(--content-width);
+  margin: 28px auto 0;
+  text-align: center;
+}
+
+.other-games-title {
+  font-family: var(--display-font);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.other-games-hub {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+  padding: 14px 26px;
+}
+
+.other-games-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.other-games-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  transition: transform 0.12s ease;
+}
+
+.other-games-item:hover .other-games-icon {
+  transform: translateY(-2px);
+}
+
+.other-games-name {
+  font-family: var(--display-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.other-games-item:hover .other-games-name {
   color: var(--accent-2);
 }
 
