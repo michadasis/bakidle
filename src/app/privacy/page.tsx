@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       </Link>
 
       <div className="clue-card legal">
-        <p className="legal-updated">Last updated 14 September 2026</p>
+        <p className="legal-updated">Last updated 17 September 2026</p>
 
         <p>
           Bakidle is a free fan game. There is no account to create and no sign in, and the game
@@ -39,7 +39,9 @@ export default function PrivacyPage() {
           Because it is tied to one browser on one device, it does not follow you to another
           phone or computer. Statistics has a Transfer my data button that turns your progress
           into a code you can copy and paste into Bakidle elsewhere. That code only moves when
-          you copy it yourself.
+          you copy it yourself. If Bakidle ever moves to a new address, your browser carries your
+          progress across once by the same means, inside the part of the link after the #, which
+          is never sent to any server.
         </p>
 
         <h2>What is not collected</h2>

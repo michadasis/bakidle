@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://bakidle.vercel.app/sitemap.xml

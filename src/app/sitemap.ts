@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { GAME_MODES } from "@/game/modes";
-
-const SITE = "https://bakidle.vercel.app";
+import { SITE_URL as SITE } from "@/site";
 
 // Required by output: "export" - the sitemap is built once at build time, not per request.
 export const dynamic = "force-static";

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { BfcacheGuard } from "@/components/BfcacheGuard";
+import { DomainMove } from "@/components/DomainMove";
 import { Footer } from "@/components/Footer";
 import { OtherGames } from "@/components/OtherGames";
+import { SITE_URL as SITE } from "@/site";
 
-const SITE = "https://bakidle.vercel.app";
 const DESCRIPTION =
   "Guess the daily Baki Hanma character in five modes: Classic stats grid, Quote, Emoji, Splash Art, and Voice Lines. A free daily browser game for fans of Baki the Grappler and Baki Hanma.";
 
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <DomainMove />
         <BfcacheGuard />
         {children}
         <OtherGames />

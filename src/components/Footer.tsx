@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SITE_HOST } from "@/site";
 
 /**
  * Shown on every page from the root layout. The year is read once when the site is built: this
@@ -8,7 +9,7 @@ import Link from "next/link";
 export function Footer() {
   return (
     <footer>
-      <p>bakidle.vercel.app - {new Date().getFullYear()}</p>
+      <p>{SITE_HOST} - {new Date().getFullYear()}</p>
       <p>
         <Link href="/privacy">Privacy Policy</Link>
       </p>
