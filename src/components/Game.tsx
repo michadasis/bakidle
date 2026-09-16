@@ -19,6 +19,7 @@ import {
   saveDaily,
 } from "@/game/progress";
 import { fetchSolvedCount, formatCount, ordinal, reportSolved } from "@/game/solved";
+import { smoothScrollToCenter } from "@/game/scroll";
 import { hydrateSettings, useSettings } from "@/game/store";
 import { purgeLegacyStorage } from "@/game/storage";
 import {
@@ -199,8 +200,11 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
     const revealMs = mode === "classic" ? 2650 : 500;
     // Scrolled straight from the timer rather than from an animation frame: a tab in the
     // background pauses frames altogether, which would leave the page sitting where it was.
+    // The scroll itself is hand-rolled (see smoothScrollToCenter) rather than the browser's
+    // native smooth scroll, whose duration and easing aren't controllable and vary noticeably
+    // between browsers.
     const timer = setTimeout(() => {
-      bannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (bannerRef.current) smoothScrollToCenter(bannerRef.current);
       setJustWon(false);
     }, revealMs);
     return () => clearTimeout(timer);
@@ -300,7 +304,7 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
 
             {finished && (
               <div className="win-banner" ref={bannerRef}>
-                <h2>Victory!</h2>
+                <h2>gg ez</h2>
                 <div className="result-avatar">
                   <Avatar character={answer} size={72} />
                 </div>
