@@ -39,7 +39,7 @@ export function DayNumber({ archiveDay }: { archiveDay?: number } = {}) {
  * Quick switcher shown once a mode is picked. Solved modes carry a check. Passing archiveDay
  * points every link at that Replay round instead of today's, and checks that round's own record.
  */
-export function ModeRail({ active, archiveDay }: { active: ModeId; archiveDay?: number }) {
+export function ModeRail({ active, archiveDay }: { active?: ModeId; archiveDay?: number }) {
   const settings = useSettings();
   const now = useNow(archiveDay === undefined);
   const today = now === null ? null : globalDayIndex(now);
@@ -153,7 +153,7 @@ export function Toolbar({
           className={`streak-flame${streak <= 0 ? " is-zero" : ""}`}
           title={streak > 0 ? `${streak}-day win streak` : "No win streak yet"}
         >
-          <Icon name="flame" filled />
+          <Icon name="flame" filled={streak > 0} />
           <span className="streak-count">{streak}</span>
           <span className="sr-only">win streak</span>
         </div>

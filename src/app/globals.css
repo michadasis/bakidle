@@ -432,7 +432,7 @@ h1::before {
 /* ---------- mode select screen ---------- */
 
 .mode-select {
-  width: var(--content-width);
+  width: min(380px, 88vw);
   margin-top: 20px;
 }
 
@@ -505,47 +505,6 @@ h1::before {
 .mode-item-desc {
   font-size: 0.8rem;
   color: var(--muted);
-}
-
-.mode-item-status {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-}
-
-.mode-item-status:empty {
-  display: none;
-}
-
-.mode-item-status:not(:empty) {
-  display: flex;
-}
-
-.mode-item-status .icon {
-  width: 16px;
-  height: 16px;
-}
-
-.mode-item-status.status-won {
-  background: var(--green);
-  color: #fff;
-}
-
-.mode-item-arrow {
-  flex-shrink: 0;
-  color: var(--muted);
-}
-
-.mode-item-arrow .icon {
-  width: 20px;
-  height: 20px;
-}
-
-.mode-item:hover .mode-item-arrow {
-  color: var(--accent-2);
 }
 
 /* ---------- other games ---------- */

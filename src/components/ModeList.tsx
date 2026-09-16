@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GAME_MODES } from "@/game/modes";
 import { answerPool } from "@/game/pools";
-import { isArchiveModeFinished, isModeFinished, loadStreak } from "@/game/progress";
+import { loadStreak } from "@/game/progress";
 import { hydrateSettings, useSettings } from "@/game/store";
 import { purgeLegacyStorage } from "@/game/storage";
 import { dayIndexToDateSlug, globalDayIndex } from "@/game/time";
@@ -42,17 +42,9 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
     if (archiveDay < 0 || archiveDay >= today) router.replace("/");
   }, [isArchive, archiveDay, today, router]);
 
-  const day = isArchive ? archiveDay : today;
   // Always the real streak for today, never the Replay round in view.
   const streak = today === null ? 0 : loadStreak(today).currentStreak;
   const base = isArchive ? `/replay/${dayIndexToDateSlug(archiveDay)}` : "";
-
-  // archiveDay is a prop, so day is known on the very first render - server included, where
-  // localStorage does not exist. Without this, a finished Replay round's checkmark would be
-  // absent from the server's HTML but present on the client's first render, a hydration
-  // mismatch. today (the live path) is naturally safe already: it starts null on both sides.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   return (
     <>
@@ -76,12 +68,6 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
         <div className="mode-list">
           {GAME_MODES.map((mode) => {
             const empty = answerPool(mode.id, settings).length === 0;
-            const done =
-              mounted &&
-              day !== null &&
-              (isArchive
-                ? isArchiveModeFinished(mode.id, day, settings)
-                : isModeFinished(mode.id, day, settings));
             return (
               <Link
                 key={mode.id}
@@ -96,12 +82,6 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
                 <span className="mode-item-text">
                   <span className="mode-item-title">{mode.label}</span>
                   <span className="mode-item-desc">{mode.blurb}</span>
-                </span>
-                <span className={`mode-item-status${done ? " status-won" : ""}`}>
-                  {done ? <Icon name="check" /> : null}
-                </span>
-                <span className="mode-item-arrow">
-                  <Icon name="chevronRight" />
                 </span>
               </Link>
             );
