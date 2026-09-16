@@ -2361,22 +2361,3 @@ footer {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .streak-flame,
-  .streak-flame .icon,
-  .streak-badge .flame,
-  .hint-tile.unlocked,
-  .hint-reveal {
-    animation: none;
-  }
-
-  /* A two second stagger is the opposite of what reduced motion asks for. */
-  table#board td {
-    animation: none;
-    opacity: 1;
-  }
-
-  .win-banner .next-mode-btn {
-    animation: none;
-  }
-}
