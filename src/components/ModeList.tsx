@@ -12,7 +12,6 @@ import { dayIndexToDateSlug, globalDayIndex } from "@/game/time";
 import { ArchiveNav, DayNumber, Toolbar } from "./Chrome";
 import { Icon } from "./Icon";
 import { HelpModal, SettingsModal, StatsModal } from "./Modals";
-import { OtherGames } from "./OtherGames";
 
 /** archiveDay renders this same screen scoped to one Replay round instead of the live day. */
 export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
@@ -116,8 +115,6 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
           </Link>
         )}
       </div>
-
-      {!isArchive && <OtherGames />}
 
       <SettingsModal open={modal === "settings"} onClose={() => setModal(null)} />
       <StatsModal open={modal === "stats"} onClose={() => setModal(null)} mode="classic" />

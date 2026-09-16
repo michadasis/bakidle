@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { BfcacheGuard } from "@/components/BfcacheGuard";
 import { Footer } from "@/components/Footer";
+import { OtherGames } from "@/components/OtherGames";
 
 const SITE = "https://bakidle.vercel.app";
 const DESCRIPTION =
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <BfcacheGuard />
         {children}
+        <OtherGames />
         <Footer />
       </body>
     </html>
