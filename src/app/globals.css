@@ -457,28 +457,24 @@ h1::before {
   gap: 12px;
 }
 
-/* Row art generated to match the mode badges: a steel plate with red marbled edges and
-   corner rivets. 9-sliced so the rivets and frame never stretch at a different row width -
-   see the source file's own border-image slice (125 in its 1900x350 pixels, 5x this 25px). */
 .mode-item {
-  position: relative;
-  isolation: isolate;
   display: flex;
   align-items: center;
+  gap: 16px;
   width: 100%;
-  background: none;
-  border-width: 16px;
-  border-style: solid;
-  border-color: transparent;
-  border-image: url("/row-bg/riveted.webp") 125 fill / 16px stretch;
-  padding: 4px 10px 4px 70px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 14px 16px;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.12s ease;
 }
 
 .mode-item:hover {
-  filter: brightness(1.1);
+  border-color: var(--accent-2);
+  background: var(--panel-2);
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow-lift);
 }
@@ -488,16 +484,13 @@ h1::before {
   box-shadow: var(--shadow-press);
 }
 
-/* Exactly fills the row's inner area (fill height, corner to corner), so its own ring lands
-   flush on the frame's red border lines - tangent, not overlapping past them. Nudged past the
-   box edge because the source art has a few px of transparent margin around its visible red
-   line, so aligning to the CSS edge alone leaves a gap before the rendered pixels. */
 .mode-item-icon {
-  position: absolute;
-  left: -13px;
-  top: -13px;
-  height: calc(100% + 26px);
-  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mode-item-icon img {
