@@ -73,7 +73,7 @@ export function ModeRail({ active, archiveDay }: { active?: ModeId; archiveDay?:
             aria-disabled={empty || undefined}
             onClick={(e) => empty && e.preventDefault()}
           >
-            <Icon name={mode.icon} />
+            <img src={`/mode-icons/${mode.id}.svg`} alt="" width={42} height={42} />
             {done && (
               <span className="rail-check">
                 <Icon name="check" />

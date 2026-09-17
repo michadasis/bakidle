@@ -77,7 +77,7 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
                 onClick={(e) => empty && e.preventDefault()}
               >
                 <span className="mode-item-icon">
-                  <Icon name={mode.icon} />
+                  <img src={`/mode-icons/${mode.id}.svg`} alt="" width={46} height={46} />
                 </span>
                 <span className="mode-item-text">
                   <span className="mode-item-title">{mode.label}</span>

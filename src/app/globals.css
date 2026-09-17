@@ -168,18 +168,33 @@ body {
   height: 21px;
 }
 
+.rail-btn img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  filter: grayscale(55%) brightness(0.75);
+  transition: filter 0.12s ease;
+}
+
 .rail-btn:hover:not(:disabled) {
   color: var(--text);
   border-color: var(--accent);
   transform: translateY(-2px);
 }
 
+.rail-btn:hover:not(:disabled) img {
+  filter: grayscale(15%) brightness(0.9);
+}
+
 .rail-btn.active {
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
   border-color: var(--ink);
   color: #fff;
   transform: scale(1.14);
   box-shadow: 0 0 0 3px rgba(255, 59, 47, 0.28), 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.rail-btn.active img {
+  filter: none;
 }
 
 .rail-btn:disabled {
@@ -473,17 +488,14 @@ h1::before {
   flex-shrink: 0;
   width: 46px;
   height: 46px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.mode-item-icon .icon {
-  width: 24px;
-  height: 24px;
+.mode-item-icon img {
+  width: 100%;
+  height: 100%;
 }
 
 .mode-item-text {
