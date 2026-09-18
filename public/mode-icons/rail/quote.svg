@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="90 90 844 844" width="1024" height="1024">
+<title>Bakidle Quote</title>
+<defs>
+<linearGradient id="red" x1="0.15" y1="0" x2="0.85" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.55" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#9c231c"/>
+</linearGradient>
+<linearGradient id="redRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.5" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#8a1e18"/>
+</linearGradient>
+<linearGradient id="bone" x1="0" y1="0" x2="0.9" y2="1">
+  <stop offset="0" stop-color="#fbf8f3"/>
+  <stop offset="0.6" stop-color="#f1ece6"/>
+  <stop offset="1" stop-color="#c9bdb0"/>
+</linearGradient>
+<radialGradient id="field" cx="0.5" cy="0.44" r="0.58">
+  <stop offset="0" stop-color="#3a1512"/>
+  <stop offset="0.5" stop-color="#1a0d0c"/>
+  <stop offset="1" stop-color="#0a0a0a"/>
+</radialGradient>
+<pattern id="hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+  <rect width="16" height="16" fill="none"/>
+  <line x1="0" y1="4" x2="16" y2="4" stroke="#000000" stroke-width="5"/>
+</pattern>
+<pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+  <circle cx="11" cy="11" r="4.2" fill="#d0342c"/>
+</pattern>
+<linearGradient id="dotFade" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0.45" stop-color="#fff" stop-opacity="0"/>
+  <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+</linearGradient>
+<mask id="dotMask"><rect width="1024" height="1024" fill="url(#dotFade)"/></mask>
+<clipPath id="fieldClip"><circle cx="512" cy="512" r="402"/></clipPath>
+<clipPath id="badgeClip"><circle cx="512" cy="512" r="500"/></clipPath>
+<filter id="torn" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="4" seed="9" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="4" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="wear" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="5" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -16 0 0 0 10.9" result="keep"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="4" result="n2"/>
+  <feDisplacementMap in="SourceGraphic" in2="n2" scale="8" xChannelSelector="R" yChannelSelector="G" result="r"/>
+  <feComposite in="r" in2="keep" operator="in"/>
+</filter>
+<filter id="motif" x="-25%" y="-25%" width="150%" height="150%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="11" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+  <feOffset in="rough" dx="13" dy="15" result="off"/>
+  <feFlood flood-color="#000" result="black"/>
+  <feComposite in="black" in2="off" operator="in" result="shadow"/>
+  <feMerge><feMergeNode in="shadow"/><feMergeNode in="rough"/></feMerge>
+</filter>
+<filter id="specks" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="21" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -22 0 0 0 7.2"/>
+</filter>
+<filter id="scratches" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.003 0.32" numOctaves="2" seed="33" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.9  24 0 0 0 -16.8"/>
+</filter>
+</defs>
+<g id="frame">
+  <circle cx="512" cy="512" r="418" fill="#000000" filter="url(#rough)"/>
+  <circle cx="512" cy="512" r="402" fill="url(#field)"/>
+  <g clip-path="url(#fieldClip)">
+    <polygon points="944,511.1 943.3,536.1 752.3,518.5" fill="#d0342c" opacity="0.20"/>
+<polygon points="942.1,552 939.6,573.6 808.5,547.1" fill="#d0342c" opacity="0.25"/>
+<polygon points="937,589.2 933.1,608.6 796.3,570.4" fill="#d0342c" opacity="0.22"/>
+<polygon points="928.2,627.8 923.5,643.6 803,599" fill="#d0342c" opacity="0.42"/>
+<polygon points="910.3,679.2 902.7,696.4 765.3,624.8" fill="#d0342c" opacity="0.24"/>
+<polygon points="900.8,700.3 896,710 761.7,636.8" fill="#d0342c" opacity="0.26"/>
+<polygon points="879.4,739.2 866.1,759.5 750,668.6" fill="#d0342c" opacity="0.31"/>
+<polygon points="853.5,776.6 846.8,785 720.1,677.5" fill="#d0342c" opacity="0.21"/>
+<polygon points="826.3,808.4 808,826.7 723.4,723.6" fill="#d0342c" opacity="0.22"/>
+<polygon points="787.1,845.1 769.2,859.1 699.8,752" fill="#d0342c" opacity="0.40"/>
+<polygon points="755.8,868.6 736.8,880.9 657.8,737.6" fill="#d0342c" opacity="0.42"/>
+<polygon points="710.9,895.5 699.4,901.2 649.1,786.3" fill="#d0342c" opacity="0.35"/>
+<polygon points="686.8,907.1 669.6,914.2 620.3,771.9" fill="#d0342c" opacity="0.40"/>
+<polygon points="648.5,921.9 626.2,928.6 590,769.1" fill="#d0342c" opacity="0.39"/>
+<polygon points="594.9,936 577.6,939 561.7,796.6" fill="#d0342c" opacity="0.40"/>
+<polygon points="557.6,941.6 539.7,943.1 533.7,767.1" fill="#d0342c" opacity="0.26"/>
+<polygon points="513.4,944 500.4,943.8 508.2,833.2" fill="#d0342c" opacity="0.24"/>
+<polygon points="466.8,941.6 451.7,939.8 472.2,835.5" fill="#d0342c" opacity="0.35"/>
+<polygon points="436.7,937.4 418.6,933.8 454,803.2" fill="#d0342c" opacity="0.32"/>
+<polygon points="397.7,928.6 384.7,924.8 432.7,784.3" fill="#d0342c" opacity="0.40"/>
+<polygon points="349.1,912.1 338.5,907.6 390.1,800.2" fill="#d0342c" opacity="0.35"/>
+<polygon points="305.1,891.2 293.5,884.7 361.4,778.1" fill="#d0342c" opacity="0.19"/>
+<polygon points="274.8,873.1 262.8,864.9 367.6,724" fill="#d0342c" opacity="0.39"/>
+<polygon points="253.1,857.8 238.5,846.4 317.2,761" fill="#d0342c" opacity="0.24"/>
+<polygon points="220.6,830.9 203.2,814.2 320.8,709.9" fill="#d0342c" opacity="0.35"/>
+<polygon points="191,801.2 180.6,789.1 322.2,676.7" fill="#d0342c" opacity="0.34"/>
+<polygon points="166.2,771 151.7,750.3 317.9,648.7" fill="#d0342c" opacity="0.36"/>
+<polygon points="140.5,732.5 133.4,720.1 240.9,666.9" fill="#d0342c" opacity="0.22"/>
+<polygon points="120.4,694.4 111.9,675 263,620.6" fill="#d0342c" opacity="0.19"/>
+<polygon points="96.9,631.5 93.5,619.3 281.9,574.6" fill="#d0342c" opacity="0.26"/>
+<polygon points="89.9,604.1 85.8,582.6 270.7,558.3" fill="#d0342c" opacity="0.26"/>
+<polygon points="84.6,574.8 82.4,557.6 206.7,550.6" fill="#d0342c" opacity="0.36"/>
+<polygon points="80,512.8 80.5,490.7 195.2,504.5" fill="#d0342c" opacity="0.35"/>
+<polygon points="81.4,477.3 82.7,463.4 215.6,483.3" fill="#d0342c" opacity="0.26"/>
+<polygon points="85,446.2 88,429.2 198.6,457.3" fill="#d0342c" opacity="0.21"/>
+<polygon points="96.9,392.4 101.7,376.7 240.7,428.2" fill="#d0342c" opacity="0.21"/>
+<polygon points="114.6,342.5 120.5,329.4 244.8,392.8" fill="#d0342c" opacity="0.28"/>
+<polygon points="121.2,327.8 129.7,310.8 289.7,401.2" fill="#d0342c" opacity="0.19"/>
+<polygon points="143,287.4 149.8,276.5 305.4,382" fill="#d0342c" opacity="0.33"/>
+<polygon points="170.2,247.8 186.5,228 261.8,306.5" fill="#d0342c" opacity="0.42"/>
+<polygon points="195.8,217.6 207.8,205.2 326.1,331.9" fill="#d0342c" opacity="0.32"/>
+<polygon points="231.6,183.4 249.4,169 321.9,276.8" fill="#d0342c" opacity="0.24"/>
+<polygon points="262.7,159.2 278.1,148.8 380.3,316.8" fill="#d0342c" opacity="0.19"/>
+<polygon points="301,135 311.7,129.3 367.4,244.9" fill="#d0342c" opacity="0.24"/>
+<polygon points="331.3,119.6 343.4,114.3 408.1,277" fill="#d0342c" opacity="0.23"/>
+<polygon points="378.7,101.1 395.5,96 435.6,258.9" fill="#d0342c" opacity="0.33"/>
+<polygon points="408.6,92.5 432.5,87.4 442.9,192.9" fill="#d0342c" opacity="0.35"/>
+<polygon points="458.9,83.3 477.1,81.4 482.4,223.3" fill="#d0342c" opacity="0.19"/>
+<polygon points="500.6,80.1 519.2,80.1 510.8,259.8" fill="#d0342c" opacity="0.20"/>
+<polygon points="554,82 570,83.9 544.9,229.6" fill="#d0342c" opacity="0.40"/>
+<polygon points="591.7,87.4 606.3,90.4 578.2,190.3" fill="#d0342c" opacity="0.27"/>
+<polygon points="615.5,92.6 635.8,98.1 576.3,276" fill="#d0342c" opacity="0.25"/>
+<polygon points="675.7,112.2 694.8,120.6 606.9,295.4" fill="#d0342c" opacity="0.29"/>
+<polygon points="705.7,125.8 721.5,134.2 630.9,286.7" fill="#d0342c" opacity="0.32"/>
+<polygon points="736.6,143 749.1,150.9 656.5,283.4" fill="#d0342c" opacity="0.40"/>
+<polygon points="768.8,164.6 786.3,178.2 667.7,312.3" fill="#d0342c" opacity="0.32"/>
+<polygon points="809.2,198.5 821.7,210.8 727.4,293.8" fill="#d0342c" opacity="0.27"/>
+<polygon points="835.7,225.9 843.7,235.2 696.1,353.9" fill="#d0342c" opacity="0.38"/>
+<polygon points="866.1,264.5 880,285.7 763.5,347" fill="#d0342c" opacity="0.19"/>
+<polygon points="889.6,302.1 900,322 781.2,371.3" fill="#d0342c" opacity="0.30"/>
+<polygon points="906.2,335.3 913,351.4 798.2,390.6" fill="#d0342c" opacity="0.24"/>
+<polygon points="922.9,378.7 928.1,395.8 823.8,417.9" fill="#d0342c" opacity="0.37"/>
+<polygon points="935.6,427 939.5,450.1 771.4,467.2" fill="#d0342c" opacity="0.24"/>
+<polygon points="941.1,462.2 942.5,476.5 786.3,484.8" fill="#d0342c" opacity="0.34"/>
+    <rect width="1024" height="1024" fill="url(#dots)" mask="url(#dotMask)" opacity="0.22"/>
+  </g>
+</g>
+<g id="motif" clip-path="url(#fieldClip)">
+  <g filter="url(#motif)">
+
+<polygon points="843.9,462.7 759.6,513.7 827.4,579.8 739.7,584.3 773.1,665.2 670.6,645.8 668.7,753.7 586.4,689.5 534.1,790.9 478.4,703 397.9,749.6 378.7,673.7 239.9,803.1 305,635.8 210.6,641.2 255.5,550.1 174.4,521.3 242.6,478.2 163.9,405.9 250.9,385.6 211.7,308.8 308.8,299.9 285,223.3 382.3,248.4 418.6,173.5 493.4,237.3 535.2,150.9 569.5,237.1 649,179.3 673.6,280.8 768.1,271.1 738,345.7 831.6,358.6 780,431" fill="url(#red)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="372,586 214,790 446,640" fill="url(#bone)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="827.1,460.5 738.4,497.7 788.7,550.8 691.4,578.3 728.5,647.6 645.7,626.1 655.5,708.2 576,652.8 547,722.9 485.1,672.7 427.6,712.4 402.7,655.4 328.4,687.8 333.2,605.6 241,613.2 286,540.8 198,506.3 281.3,474.9 205.8,408.1 278.2,399.5 238.6,324.1 342.5,330.9 308.8,251.8 391.7,289.5 407.1,212.6 487.7,262.3 543.9,206.3 560.1,280.6 643.1,232 641.1,298.9 737.2,286.8 694.8,360.9 781.6,362.6 730.6,427.2" fill="url(#bone)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="372,586 214,790 446,640" fill="url(#bone)" stroke="none" transform="translate(6 -8) scale(0.985)"/>
+<path d="M 40 0 A 40 40 0 1 0 -16.9 36.3 Q -12 72 -46 104 C 14 92 44 52 40 0 Z" transform="translate(432 520) rotate(180) scale(1.55)" fill="#000000"/>
+<path d="M 40 0 A 40 40 0 1 0 -16.9 36.3 Q -12 72 -46 104 C 14 92 44 52 40 0 Z" transform="translate(592 520) rotate(180) scale(1.55)" fill="#000000"/>
+
+  </g>
+</g>
+<g id="grit" clip-path="url(#badgeClip)" pointer-events="none">
+  <rect width="1024" height="1024" filter="url(#specks)" opacity="0.4"/>
+  <rect x="-200" y="-200" width="1424" height="1424" filter="url(#scratches)" opacity="0.22" transform="rotate(-28 512 512)"/>
+</g>
+</svg>
