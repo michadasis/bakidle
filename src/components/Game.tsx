@@ -63,6 +63,8 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
   const [rank, setRank] = useState<number | null>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const confettiRef = useRef<ConfettiHandle>(null);
+  // Set while a fresh win is waiting for its guess row to finish revealing; the board calls it.
+  const celebrateRef = useRef<(() => void) | null>(null);
 
   const day = isArchive ? archiveDay : liveDay;
 
@@ -163,12 +165,10 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
         saveDaily(mode, day, settings, { guesses: next, finished: won, won });
       }
       if (won && isArchive) {
-        confettiRef.current?.fire();
         setJustWon(true);
       } else if (won) {
         recordWin(mode, next.length);
         recordStreakWin(day);
-        confettiRef.current?.fire();
         setJustWon(true);
         // Decoration only: a counter that fails, or was never configured, leaves the win alone.
         void reportSolved(mode).then((result) => {
@@ -193,21 +193,33 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
   // here: reopening a round already finished should leave the page where it opened.
   useEffect(() => {
     if (!justWon) return;
-    // The winning guess reveals one cell at a time, so the page waits for that to finish before
-    // travelling: Classic runs nine cells a quarter second apart at 0.55s each, the other modes
-    // reveal a single row. The flag is cleared after the scroll is asked for, not before, since
-    // clearing it first re-runs this effect and the cleanup cancels the pending frame.
+    // The winning guess reveals one cell at a time, so the confetti and the page travel wait for
+    // that to finish: Classic runs nine cells a quarter second apart at 0.55s each, the other
+    // modes reveal a single row. The flag is cleared after the scroll is asked for, not before,
+    // since clearing it first re-runs this effect and the cleanup cancels the pending work.
     const revealMs = mode === "classic" ? 2650 : 500;
-    // Scrolled straight from the timer rather than from an animation frame: a tab in the
-    // background pauses frames altogether, which would leave the page sitting where it was.
-    // The scroll itself is hand-rolled (see smoothScrollToCenter) rather than the browser's
-    // native smooth scroll, whose duration and easing aren't controllable and vary noticeably
-    // between browsers.
-    const timer = setTimeout(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const celebrate = () => {
+      clearTimeout(timer);
+      celebrateRef.current = null;
+      confettiRef.current?.fire();
+      // The scroll itself is hand-rolled (see smoothScrollToCenter) rather than the browser's
+      // native smooth scroll, whose duration and easing aren't controllable and vary noticeably
+      // between browsers.
       if (bannerRef.current) smoothScrollToCenter(bannerRef.current);
       setJustWon(false);
-    }, revealMs);
-    return () => clearTimeout(timer);
+    };
+    // The board calls this from the newest row's real animationend, so the celebration lands
+    // after the cells have actually shown up; the row's paint time varies by a few hundred ms,
+    // which a fixed delay alone kept getting wrong. The timer is only the fallback for when that
+    // event never comes: a tab in the background pauses animations (and frames) altogether,
+    // which would otherwise leave the page sitting where it was.
+    celebrateRef.current = celebrate;
+    timer = setTimeout(celebrate, revealMs + 500);
+    return () => {
+      clearTimeout(timer);
+      celebrateRef.current = null;
+    };
   }, [justWon, mode]);
 
   // Always the real streak for today, never the Replay round in view - the toolbar is the same
@@ -291,9 +303,9 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
             ) : null}
 
             {mode === "classic" ? (
-              <ClassicBoard guesses={guessed} answer={answer} />
+              <ClassicBoard guesses={guessed} answer={answer} onRevealed={() => celebrateRef.current?.()} />
             ) : (
-              <SimpleBoard guesses={guessed} answer={answer} />
+              <SimpleBoard guesses={guessed} answer={answer} onRevealed={() => celebrateRef.current?.()} />
             )}
 
             {yesterday && (

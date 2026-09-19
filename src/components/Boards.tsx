@@ -29,7 +29,19 @@ function StatCell({ label, text, cell }: { label: string; text: string; cell: Ce
   );
 }
 
-export function ClassicBoard({ guesses, answer }: { guesses: Character[]; answer: Character }) {
+/**
+ * onRevealed fires when the newest row (first, since the board lists newest on top) has finished
+ * animating in, so a win can celebrate after the cells show up rather than while they still are.
+ */
+export function ClassicBoard({
+  guesses,
+  answer,
+  onRevealed,
+}: {
+  guesses: Character[];
+  answer: Character;
+  onRevealed?: () => void;
+}) {
   return (
     <div className="table-wrap">
       <table id="board">
@@ -46,7 +58,15 @@ export function ClassicBoard({ guesses, answer }: { guesses: Character[]; answer
             <th>Status</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          onAnimationEnd={(e) => {
+            const cell = e.target as HTMLElement;
+            const newest = e.currentTarget.firstElementChild;
+            if (cell.tagName === "TD" && cell.parentElement === newest && cell === newest?.lastElementChild) {
+              onRevealed?.();
+            }
+          }}
+        >
           {/* Newest guess on top, as the original board did. */}
           {[...guesses].reverse().map((g) => {
             const cmp = computeComparisons(g, answer);
@@ -86,9 +106,22 @@ export function ClassicBoard({ guesses, answer }: { guesses: Character[]; answer
 }
 
 /** Every non-Classic mode shows the same thing: was that the character or not. */
-export function SimpleBoard({ guesses, answer }: { guesses: Character[]; answer: Character }) {
+export function SimpleBoard({
+  guesses,
+  answer,
+  onRevealed,
+}: {
+  guesses: Character[];
+  answer: Character;
+  onRevealed?: () => void;
+}) {
   return (
-    <ul className="simple-board">
+    <ul
+      className="simple-board"
+      onAnimationEnd={(e) => {
+        if (e.target === e.currentTarget.firstElementChild) onRevealed?.();
+      }}
+    >
       {[...guesses].reverse().map((g) => (
         <li key={g.name} className={`simple-row ${g.name === answer.name ? "correct" : "wrong"}`}>
           <Avatar character={g} size={32} />
