@@ -308,7 +308,7 @@ export const CHARACTERS: readonly Character[] = [
     image: "https://static.wikia.nocookie.net/baki/images/0/01/YashaApe.png" },
   { name: "Mouth", alias: "The Prison Enforcer", gender: "Male", origin: "United States", styles: ["Mixed Martial Arts"], saga: "Great Prison Battle Saga", status: "Alive",
     quote: "One move can dodge only one punch. Throw three at once, and two will land.", quoteVerified: true, emoji: ["3️⃣", "👄", "🦷", "👅"],
-    voiceClips: ["clips/mouth.mp3"],
+    voiceClips: ["clips/mouth.mp3", "clips/mouth-2.mp3", "clips/mouth-3.mp3"],
     image: "https://static.wikia.nocookie.net/baki/images/7/71/Mouth_profile.png" },
   { name: "Chamomile Lessen", alias: "The Ninjutsu Aide", gender: "Male", origin: "Unknown", styles: ["Mukakure-ryuu Ninjutsu"], saga: "Great Prison Battle Saga", status: "Alive",
     quote: "Alone and barehanded, we can hijack planes and seize nuclear plants. Myself included.", quoteVerified: true, emoji: ["✈️", "☢️", "🍵", "🌼"],
