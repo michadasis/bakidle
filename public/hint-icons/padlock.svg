@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<title>Bakidle Locked</title>
+<defs>
+<linearGradient id="pdred" x1="0.15" y1="0" x2="0.85" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.55" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#9c231c"/>
+</linearGradient>
+<linearGradient id="pdredRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.5" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#8a1e18"/>
+</linearGradient>
+<linearGradient id="pdbone" x1="0" y1="0" x2="0.9" y2="1">
+  <stop offset="0" stop-color="#fbf8f3"/>
+  <stop offset="0.6" stop-color="#f1ece6"/>
+  <stop offset="1" stop-color="#c9bdb0"/>
+</linearGradient>
+<radialGradient id="pdfield" cx="0.5" cy="0.44" r="0.58">
+  <stop offset="0" stop-color="#3a1512"/>
+  <stop offset="0.5" stop-color="#1a0d0c"/>
+  <stop offset="1" stop-color="#0a0a0a"/>
+</radialGradient>
+<pattern id="pdhatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+  <rect width="16" height="16" fill="none"/>
+  <line x1="0" y1="4" x2="16" y2="4" stroke="#000000" stroke-width="5"/>
+</pattern>
+<pattern id="pddots" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+  <circle cx="11" cy="11" r="4.2" fill="#d0342c"/>
+</pattern>
+<linearGradient id="pddotFade" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0.45" stop-color="#fff" stop-opacity="0"/>
+  <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+</linearGradient>
+<mask id="pddotMask"><rect width="1024" height="1024" fill="url(#pddotFade)"/></mask>
+<clipPath id="pdfieldClip"><circle cx="512" cy="512" r="402"/></clipPath>
+<clipPath id="pdbadgeClip"><circle cx="512" cy="512" r="500"/></clipPath>
+<filter id="pdtorn" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="4" seed="41" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="pdrough" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="12" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="pdwear" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="27" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -16 0 0 0 10.9" result="keep"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="12" result="n2"/>
+  <feDisplacementMap in="SourceGraphic" in2="n2" scale="8" xChannelSelector="R" yChannelSelector="G" result="r"/>
+  <feComposite in="r" in2="keep" operator="in"/>
+</filter>
+<filter id="pdmotif" x="-25%" y="-25%" width="150%" height="150%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="6" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+  <feOffset in="rough" dx="13" dy="15" result="off"/>
+  <feFlood flood-color="#000" result="black"/>
+  <feComposite in="black" in2="off" operator="in" result="shadow"/>
+  <feMerge><feMergeNode in="shadow"/><feMergeNode in="rough"/></feMerge>
+</filter>
+<filter id="pdspecks" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="52" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -22 0 0 0 7.2"/>
+</filter>
+<filter id="pdscratches" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.003 0.32" numOctaves="2" seed="71" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.9  24 0 0 0 -16.8"/>
+</filter>
+<clipPath id="pdBody"><rect x="150" y="444" width="724" height="460" rx="78"/></clipPath><clipPath id="pdLock"><path d="M 227 544 L 227 404 A 285 285 0 0 1 797 404 L 797 544 L 637 544 L 637 404 A 125 125 0 0 0 387 404 L 387 544 Z"/><rect x="150" y="444" width="724" height="460" rx="78"/></clipPath>
+</defs>
+
+<g id="motif">
+  <g filter="url(#pdmotif)">
+    <path d="M 227 544 L 227 404 A 285 285 0 0 1 797 404 L 797 544 L 637 544 L 637 404 A 125 125 0 0 0 387 404 L 387 544 Z" fill="url(#pdbone)" stroke="#000000" stroke-width="20" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M 286 400 Q 306 276 414 226" stroke="#fbf8f3" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <path d="M 700 262 Q 762 318 766 424" stroke="#000000" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.35"/>
+    <rect x="150" y="444" width="724" height="460" rx="78" fill="url(#pdbone)" stroke="#000000" stroke-width="20" stroke-linejoin="round" stroke-linecap="round"/>
+    <g clip-path="url(#pdBody)">
+      <rect x="606" y="444" width="300" height="460" fill="url(#pdhatch)" opacity="0.3"/>
+      <rect x="648" y="444" width="260" height="460" fill="#000000" opacity="0.1"/>
+      <path d="M 150 540 L 874 540" stroke="#000000" stroke-width="12" opacity="0.26"/>
+    </g>
+    <circle cx="228" cy="512" r="21" fill="#c9bdb0" stroke="#000000" stroke-width="12"/>
+    <circle cx="796" cy="512" r="21" fill="#c9bdb0" stroke="#000000" stroke-width="12"/>
+    <circle cx="512" cy="632" r="98" fill="#000000" stroke="#000000" stroke-width="20"/>
+    <polygon points="444,682 580,682 610,836 414,836" fill="#000000" stroke="#000000" stroke-width="20" stroke-linejoin="round"/>
+    <circle cx="512" cy="632" r="68" fill="url(#pdred)"/>
+    <polygon points="460,674 564,674 584,812 440,812" fill="url(#pdred)"/>
+    <path d="M 214 566 Q 196 624 200 700" stroke="#fbf8f3" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <path d="M 254 806 L 404 766" stroke="#000000" stroke-width="18" stroke-linecap="round" opacity="0.3"/>
+    <path d="M 254 800 L 404 760" stroke="#d0342c" stroke-width="12" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 664 856 L 758 836" stroke="#d0342c" stroke-width="10" stroke-linecap="round" opacity="0.75"/>
+  </g>
+</g>
+<g id="grit" clip-path="url(#pdLock)" pointer-events="none">
+  <rect width="1024" height="1024" filter="url(#pdspecks)" opacity="0.4"/>
+  <rect x="-200" y="-200" width="1424" height="1424" filter="url(#pdscratches)" opacity="0.22" transform="rotate(-28 512 512)"/>
+</g>
+</svg>

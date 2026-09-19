@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<title>Bakidle Fighting Style</title>
+<defs>
+<linearGradient id="fsred" x1="0.15" y1="0" x2="0.85" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.55" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#9c231c"/>
+</linearGradient>
+<linearGradient id="fsredRing" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#ff3b2f"/>
+  <stop offset="0.5" stop-color="#d0342c"/>
+  <stop offset="1" stop-color="#8a1e18"/>
+</linearGradient>
+<linearGradient id="fsbone" x1="0" y1="0" x2="0.9" y2="1">
+  <stop offset="0" stop-color="#fbf8f3"/>
+  <stop offset="0.6" stop-color="#f1ece6"/>
+  <stop offset="1" stop-color="#c9bdb0"/>
+</linearGradient>
+<radialGradient id="fsfield" cx="0.5" cy="0.44" r="0.58">
+  <stop offset="0" stop-color="#3a1512"/>
+  <stop offset="0.5" stop-color="#1a0d0c"/>
+  <stop offset="1" stop-color="#0a0a0a"/>
+</radialGradient>
+<pattern id="fshatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+  <rect width="16" height="16" fill="none"/>
+  <line x1="0" y1="4" x2="16" y2="4" stroke="#000000" stroke-width="5"/>
+</pattern>
+<pattern id="fsdots" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+  <circle cx="11" cy="11" r="4.2" fill="#d0342c"/>
+</pattern>
+<linearGradient id="fsdotFade" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0.45" stop-color="#fff" stop-opacity="0"/>
+  <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+</linearGradient>
+<mask id="fsdotMask"><rect width="1024" height="1024" fill="url(#fsdotFade)"/></mask>
+<clipPath id="fsfieldClip"><circle cx="512" cy="512" r="402"/></clipPath>
+<clipPath id="fsbadgeClip"><circle cx="512" cy="512" r="500"/></clipPath>
+<filter id="fstorn" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="4" seed="7" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="fsrough" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="15" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="fswear" x="-5%" y="-5%" width="110%" height="110%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="2" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -16 0 0 0 10.9" result="keep"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="15" result="n2"/>
+  <feDisplacementMap in="SourceGraphic" in2="n2" scale="8" xChannelSelector="R" yChannelSelector="G" result="r"/>
+  <feComposite in="r" in2="keep" operator="in"/>
+</filter>
+<filter id="fsmotif" x="-25%" y="-25%" width="150%" height="150%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="29" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+  <feOffset in="rough" dx="13" dy="15" result="off"/>
+  <feFlood flood-color="#000" result="black"/>
+  <feComposite in="black" in2="off" operator="in" result="shadow"/>
+  <feMerge><feMergeNode in="shadow"/><feMergeNode in="rough"/></feMerge>
+</filter>
+<filter id="fsspecks" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="61" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -22 0 0 0 7.2"/>
+</filter>
+<filter id="fsscratches" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.003 0.32" numOctaves="2" seed="55" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.93  0 0 0 0 0.9  24 0 0 0 -16.8"/>
+</filter>
+<clipPath id="fsTailA"><path d="M 404 575 L 522 575 L 496 826 L 486 872 L 468 830 L 452 866 L 434 826 L 418 862 L 400 822 L 382 854 L 366 818 Z"/></clipPath><clipPath id="fsTailB"><path d="M 512 575 L 628 575 L 656 790 L 668 836 L 648 798 L 632 832 L 614 794 L 598 826 L 582 788 L 566 820 L 552 782 Z"/></clipPath><clipPath id="fsBandL"><path d="M 96 418 Q 78 502 100 598 L 404 566 L 398 424 Z"/></clipPath><clipPath id="fsBandR"><path d="M 928 430 Q 948 510 926 606 L 622 570 L 628 430 Z"/></clipPath><clipPath id="fsKnot"><rect x="392" y="415" width="240" height="170" rx="36"/></clipPath>
+</defs>
+<g id="frame">
+  <circle cx="512" cy="512" r="494" fill="#000000" filter="url(#fstorn)"/>
+  <circle cx="512" cy="512" r="466" fill="url(#fsredRing)" filter="url(#fswear)"/>
+  <circle cx="512" cy="512" r="418" fill="#000000" filter="url(#fsrough)"/>
+  <circle cx="512" cy="512" r="402" fill="url(#fsfield)"/>
+  <g clip-path="url(#fsfieldClip)">
+<polygon points="941.4,489.6 941.9,518.3 852.5,522.4" fill="#d0342c" opacity="0.25"/>
+<polygon points="941.7,545.9 940.0,563.2 800.5,551.1" fill="#d0342c" opacity="0.25"/>
+<polygon points="937.6,585.6 933.1,608.3 639.2,535.9" fill="#d0342c" opacity="0.30"/>
+<polygon points="927.3,632.1 919.4,656.8 669.1,571.1" fill="#d0342c" opacity="0.24"/>
+<polygon points="914.5,668.8 909.7,680.5 780.5,628.2" fill="#d0342c" opacity="0.38"/>
+<polygon points="895.0,708.0 884.3,727.6 794.5,686.3" fill="#d0342c" opacity="0.36"/>
+<polygon points="875.1,748.6 859.6,770.9 738.6,681.8" fill="#d0342c" opacity="0.35"/>
+<polygon points="857.0,770.0 840.7,790.4 704.9,679.9" fill="#d0342c" opacity="0.30"/>
+<polygon points="828.4,808.2 814.0,822.9 716.7,736.1" fill="#d0342c" opacity="0.40"/>
+<polygon points="788.0,841.6 773.2,853.5 728.2,755.6" fill="#d0342c" opacity="0.41"/>
+<polygon points="754.7,866.8 742.9,874.6 673.2,732.9" fill="#d0342c" opacity="0.29"/>
+<polygon points="726.1,885.2 715.4,891.1 648.7,730.7" fill="#d0342c" opacity="0.39"/>
+<polygon points="682.2,909.7 668.6,915.2 558.4,617.5" fill="#d0342c" opacity="0.31"/>
+<polygon points="641.7,921.1 619.8,927.4 615.9,827.3" fill="#d0342c" opacity="0.23"/>
+<polygon points="600.1,934.0 589.4,936.0 541.8,660.2" fill="#d0342c" opacity="0.27"/>
+<polygon points="563.7,940.3 547.6,941.9 540.5,769.5" fill="#d0342c" opacity="0.31"/>
+<polygon points="524.1,941.2 506.8,941.4 513.6,722.8" fill="#d0342c" opacity="0.23"/>
+<polygon points="483.1,942.5 462.6,940.6 495.8,764.2" fill="#d0342c" opacity="0.38"/>
+<polygon points="447.6,937.9 420.3,932.8 485.0,675.1" fill="#d0342c" opacity="0.41"/>
+<polygon points="396.4,930.3 369.3,921.8 442.1,712.5" fill="#d0342c" opacity="0.20"/>
+<polygon points="348.9,910.6 335.6,904.9 408.4,752.9" fill="#d0342c" opacity="0.32"/>
+<polygon points="318.1,899.8 302.7,891.7 467.6,608.6" fill="#d0342c" opacity="0.34"/>
+<polygon points="285.1,877.7 272.8,869.8 455.5,602.1" fill="#d0342c" opacity="0.41"/>
+<polygon points="235.9,846.8 228.0,840.1 297.1,746.9" fill="#d0342c" opacity="0.23"/>
+<polygon points="212.8,824.6 203.8,815.7 324.7,711.6" fill="#d0342c" opacity="0.41"/>
+<polygon points="183.8,791.6 169.0,773.1 271.6,703.5" fill="#d0342c" opacity="0.37"/>
+<polygon points="154.2,749.1 148.3,740.0 376.1,590.9" fill="#d0342c" opacity="0.27"/>
+<polygon points="137.2,726.4 127.5,708.3 325.0,604.8" fill="#d0342c" opacity="0.30"/>
+<polygon points="112.8,679.0 108.2,667.7 314.7,591.1" fill="#d0342c" opacity="0.22"/>
+<polygon points="97.8,637.4 94.3,625.5 298.2,586.1" fill="#d0342c" opacity="0.41"/>
+<polygon points="90.7,597.3 88.5,586.0 191.4,574.1" fill="#d0342c" opacity="0.32"/>
+<polygon points="85.3,560.2 84.4,550.7 348.5,535.5" fill="#d0342c" opacity="0.28"/>
+<polygon points="83.1,526.1 83.0,501.6 250.8,520.3" fill="#d0342c" opacity="0.33"/>
+<polygon points="80.7,477.8 81.8,466.9 396.3,497.3" fill="#d0342c" opacity="0.26"/>
+<polygon points="84.9,444.7 88.7,423.8 176.5,461.4" fill="#d0342c" opacity="0.21"/>
+<polygon points="98.5,386.7 103.0,372.5 290.7,427.6" fill="#d0342c" opacity="0.33"/>
+<polygon points="111.5,347.4 116.7,335.3 315.2,420.8" fill="#d0342c" opacity="0.34"/>
+<polygon points="124.1,321.7 132.1,306.1 381.2,447.7" fill="#d0342c" opacity="0.26"/>
+<polygon points="143.7,283.0 158.7,260.5 302.2,366.4" fill="#d0342c" opacity="0.41"/>
+<polygon points="177.6,243.0 191.0,227.1 368.7,397.0" fill="#d0342c" opacity="0.33"/>
+<polygon points="200.9,211.9 209.4,203.3 368.2,370.2" fill="#d0342c" opacity="0.39"/>
+<polygon points="237.7,178.8 247.2,171.2 339.3,309.8" fill="#d0342c" opacity="0.27"/>
+<polygon points="264.1,157.5 288.0,142.0 404.8,340.3" fill="#d0342c" opacity="0.40"/>
+<polygon points="297.4,137.0 306.9,131.8 366.3,218.5" fill="#d0342c" opacity="0.24"/>
+<polygon points="333.5,119.7 356.0,110.2 456.9,382.0" fill="#d0342c" opacity="0.33"/>
+<polygon points="371.7,103.6 394.6,96.4 443.9,311.9" fill="#d0342c" opacity="0.41"/>
+<polygon points="412.8,92.7 428.2,89.3 461.5,306.1" fill="#d0342c" opacity="0.40"/>
+<polygon points="453.1,84.2 478.5,81.5 493.1,235.8" fill="#d0342c" opacity="0.29"/>
+<polygon points="495.2,83.2 512.9,82.9 505.3,409.5" fill="#d0342c" opacity="0.22"/>
+<polygon points="548.6,83.3 572.8,86.1 519.4,393.0" fill="#d0342c" opacity="0.29"/>
+<polygon points="581.8,86.7 608.6,92.0 560.1,280.9" fill="#d0342c" opacity="0.24"/>
+<polygon points="626.2,96.7 639.4,100.5 580.1,271.0" fill="#d0342c" opacity="0.39"/>
+<polygon points="672.2,112.2 684.9,117.6 619.0,213.4" fill="#d0342c" opacity="0.28"/>
+<polygon points="709.9,127.0 721.2,133.1 660.6,217.8" fill="#d0342c" opacity="0.28"/>
+<polygon points="737.0,146.7 756.5,159.5 620.3,328.9" fill="#d0342c" opacity="0.35"/>
+<polygon points="779.5,172.2 795.4,185.3 603.4,411.4" fill="#d0342c" opacity="0.39"/>
+<polygon points="806.8,196.7 821.7,211.3 739.7,286.4" fill="#d0342c" opacity="0.30"/>
+<polygon points="837.2,228.2 847.1,240.0 587.8,446.1" fill="#d0342c" opacity="0.27"/>
+<polygon points="864.3,266.4 876.6,285.1 658.2,423.3" fill="#d0342c" opacity="0.20"/>
+<polygon points="887.7,302.1 893.1,312.1 806.0,350.5" fill="#d0342c" opacity="0.40"/>
+<polygon points="903.5,330.1 912.1,350.0 660.4,452.6" fill="#d0342c" opacity="0.22"/>
+<polygon points="920.3,378.9 926.7,400.3 742.1,437.5" fill="#d0342c" opacity="0.40"/>
+<polygon points="937.2,427.1 940.0,442.3 703.2,476.4" fill="#d0342c" opacity="0.32"/>
+<polygon points="942.9,462.1 944.9,483.6 687.0,503.1" fill="#d0342c" opacity="0.21"/>
+    <rect width="1024" height="1024" fill="url(#fsdots)" mask="url(#fsdotMask)" opacity="0.22"/>
+  </g>
+</g>
+<g id="motif" clip-path="url(#fsfieldClip)">
+  <g filter="url(#fsmotif)">
+
+
+<g transform="rotate(-8 512 512)">
+  <!-- frayed tails -->
+  <path d="M 404 575 L 522 575 L 496 826 L 486 872 L 468 830 L 452 866 L 434 826 L 418 862 L 400 822 L 382 854 L 366 818 Z" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 512 575 L 628 575 L 656 790 L 668 836 L 648 798 L 632 832 L 614 794 L 598 826 L 582 788 L 566 820 L 552 782 Z" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <g clip-path="url(#fsTailA)"><rect x="380" y="680" width="180" height="220" fill="url(#fshatch)" opacity="0.45"/></g>
+  <g clip-path="url(#fsTailB)"><rect x="540" y="660" width="180" height="220" fill="url(#fshatch)" opacity="0.45"/></g>
+  <path d="M 428 590 L 410 800 M 486 592 L 470 806" stroke="#000000" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.4" stroke-dasharray="20 16"/>
+  <path d="M 556 592 L 578 786 M 614 594 L 634 792" stroke="#000000" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.4" stroke-dasharray="20 16"/>
+  <path d="M 400 862 L 392 912 M 450 868 L 448 916 M 492 872 L 500 914" stroke="#000000" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <path d="M 400 862 L 392 912 M 450 868 L 448 916 M 492 872 L 500 914" stroke="#9c231c" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M 586 826 L 578 872 M 630 832 L 634 880 M 664 834 L 676 874" stroke="#000000" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <path d="M 586 826 L 578 872 M 630 832 L 634 880 M 664 834 L 676 874" stroke="#9c231c" stroke-width="14" stroke-linecap="round" fill="none"/>
+
+  <!-- belt bands -->
+  <path d="M 96 418 Q 78 502 100 598 L 404 566 L 398 424 Z" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 928 430 Q 948 510 926 606 L 622 570 L 628 430 Z" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <g clip-path="url(#fsBandL)"><rect x="80" y="512" width="360" height="110" fill="url(#fshatch)" opacity="0.5"/></g>
+  <g clip-path="url(#fsBandR)"><rect x="600" y="512" width="360" height="110" fill="url(#fshatch)" opacity="0.5"/></g>
+  <path d="M 124 444 L 396 436" stroke="#fbf8f3" stroke-width="13" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <path d="M 638 444 L 906 452" stroke="#fbf8f3" stroke-width="13" stroke-linecap="round" fill="none" opacity="0.9"/>
+
+  <!-- knot -->
+  <path d="M 376 566 L 452 372 L 574 418 L 498 614 Z" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="392" y="415" width="240" height="170" rx="36" fill="url(#fsred)" stroke="#000000" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+  <g clip-path="url(#fsKnot)">
+    <rect x="524" y="415" width="120" height="180" fill="url(#fshatch)" opacity="0.5"/>
+    <rect x="392" y="522" width="250" height="70" fill="#7a1712" opacity="0.35"/>
+  </g>
+  <path d="M 422 448 Q 466 434 512 440" stroke="#fbf8f3" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M 404 420 L 386 580" stroke="#000000" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M 618 424 L 636 584" stroke="#000000" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <path d="M 132 470 L 392 460 M 136 552 L 392 540" stroke="#000000" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.38" stroke-dasharray="22 17"/>
+  <path d="M 636 468 L 898 478 M 634 548 L 896 558" stroke="#000000" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.38" stroke-dasharray="22 17"/>
+</g>
+
+
+  </g>
+</g>
+<g id="grit" clip-path="url(#fsbadgeClip)" pointer-events="none">
+  <rect width="1024" height="1024" filter="url(#fsspecks)" opacity="0.4"/>
+  <rect x="-200" y="-200" width="1424" height="1424" filter="url(#fsscratches)" opacity="0.22" transform="rotate(-28 512 512)"/>
+</g>
+</svg>

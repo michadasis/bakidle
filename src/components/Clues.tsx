@@ -45,7 +45,7 @@ function HintTile({
   const head = (
     <>
       <div className="hint-icon">
-        <Icon name={icon} />
+        <img src={`/hint-icons/${icon}.svg`} alt="" width={40} height={40} />
       </div>
       <div className="hint-title">{title}</div>
     </>
@@ -55,7 +55,8 @@ function HintTile({
       <div className="hint-tile locked">
         {head}
         <div className="hint-body">
-          <Icon name="lock" /> {remaining} {remaining === 1 ? "guess" : "guesses"}
+          <img className="hint-lock" src="/hint-icons/padlock.svg" alt="" width={16} height={16} />{" "}
+          {remaining} {remaining === 1 ? "guess" : "guesses"}
         </div>
       </div>
     );
@@ -113,7 +114,7 @@ export function Hints({
     <div className="clue-card hints-card">
       <div className="hint-tiles">
         <HintTile
-          icon="tag"
+          icon="nickname"
           title="Nickname"
           unlocked={firstUnlocked}
           remaining={until(HINT_THRESHOLDS.first)}
@@ -121,7 +122,7 @@ export function Hints({
           onToggle={() => toggle("first")}
         />
         <HintTile
-          icon={second === "portrait" ? "image" : "swords"}
+          icon={second === "portrait" ? "portrait" : "fighting-style"}
           title={second === "portrait" ? "Portrait" : "Fighting Style"}
           unlocked={secondUnlocked}
           remaining={until(HINT_THRESHOLDS.second)}

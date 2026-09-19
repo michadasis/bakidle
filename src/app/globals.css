@@ -882,16 +882,19 @@ h1::before {
   background: var(--panel-2);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
-  padding: 14px 10px;
-  display: flex;
-  flex-direction: column;
+  padding: 8px 10px;
+  /* Icon beside the text: a stacked card was over 120px tall for two short lines. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 6px;
+  column-gap: 10px;
+  row-gap: 1px;
   box-shadow: var(--shadow-control);
   /* The unlocked tile is a <button>, which does not inherit type or colour on its own. */
   font: inherit;
   color: inherit;
-  text-align: center;
+  text-align: left;
 }
 
 /* An unlocked hint is something to press, not something already shown. */
@@ -914,16 +917,31 @@ h1::before {
   background: #282121;
 }
 
+/* One artwork per hint; a locked tile shows it greyed and dimmed rather than a second asset. */
 .hint-icon {
-  font-size: 1.9rem;
-  line-height: 1;
-  color: var(--muted);
-  opacity: 0.5;
+  grid-row: 1 / span 2;
+  line-height: 0;
 }
 
-.hint-tile.unlocked .hint-icon {
-  color: var(--accent-2);
-  opacity: 1;
+.hint-icon img {
+  width: 40px;
+  height: 40px;
+}
+
+.hint-icon img,
+.hint-lock {
+  display: block;
+  filter: grayscale(1) brightness(0.62) contrast(1.05);
+  transition: filter 0.2s ease;
+}
+
+.hint-tile.unlocked .hint-icon img {
+  filter: none;
+}
+
+.hint-lock {
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .hint-title {
@@ -932,6 +950,7 @@ h1::before {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
+  align-self: end;
 }
 
 .hint-tile.unlocked .hint-title {
@@ -944,9 +963,10 @@ h1::before {
   min-height: 1.4em;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
-  text-align: center;
+  text-align: left;
+  align-self: start;
 }
 
 .hint-tile.unlocked .hint-body {
@@ -2331,6 +2351,28 @@ footer {
   .rail-btn .icon {
     width: 18px;
     height: 18px;
+  }
+
+  .hint-tiles {
+    gap: 8px;
+  }
+
+  .hint-tile {
+    padding: 7px 8px;
+    column-gap: 7px;
+  }
+
+  .hint-icon img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hint-title {
+    font-size: 0.72rem;
+  }
+
+  .hint-body {
+    font-size: 0.7rem;
   }
 }
 
