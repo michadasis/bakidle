@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { SiteLogo } from "@/components/SiteLogo";
 
 export const metadata: Metadata = {
   title: "Bakidle - Privacy Policy",
@@ -13,7 +14,7 @@ export default function PrivacyPage() {
   return (
     <>
       <header>
-        <h1>BAKIDLE</h1>
+        <SiteLogo />
         <p className="subtitle">Privacy Policy</p>
       </header>
 

@@ -37,6 +37,7 @@ import { Confetti, type ConfettiHandle } from "./Confetti";
 import { GuessInput } from "./GuessInput";
 import { Icon } from "./Icon";
 import { HelpModal, SettingsModal, StatsModal } from "./Modals";
+import { SiteLogo } from "./SiteLogo";
 
 const REJECTION_MESSAGE = {
   unknown: () => "Pick a character from the list.",
@@ -245,7 +246,7 @@ export function Game({ mode, archiveDay }: { mode: ModeId; archiveDay?: number }
   return (
     <>
       <header>
-        <h1>BAKIDLE</h1>
+        <SiteLogo />
         <p className="subtitle">Guess the Baki character</p>
         <DayNumber archiveDay={archiveDay} />
       </header>

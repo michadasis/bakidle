@@ -12,6 +12,7 @@ import { dayIndexToDateSlug, globalDayIndex } from "@/game/time";
 import { ArchiveNav, DayNumber, Toolbar } from "./Chrome";
 import { Icon } from "./Icon";
 import { HelpModal, SettingsModal, StatsModal } from "./Modals";
+import { SiteLogo } from "./SiteLogo";
 
 /** archiveDay renders this same screen scoped to one Replay round instead of the live day. */
 export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
@@ -49,7 +50,7 @@ export function ModeList({ archiveDay }: { archiveDay?: number } = {}) {
   return (
     <>
       <header>
-        <h1>BAKIDLE</h1>
+        <SiteLogo link={isArchive} />
         <p className="subtitle">Guess the Baki character</p>
         <DayNumber archiveDay={archiveDay} />
       </header>

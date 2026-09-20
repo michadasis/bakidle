@@ -326,31 +326,21 @@ header {
   padding-top: 8px;
 }
 
-h1 {
-  position: relative;
-  display: inline-block;
-  font-family: var(--display-font);
-  font-weight: 400;
-  font-size: 3.6rem;
-  letter-spacing: 0.03em;
-  margin: 0;
-  padding: 0 8px;
-  color: var(--text);
-  -webkit-text-stroke: 2px var(--ink);
-  text-shadow: 5px 5px 0 var(--ink);
-  transform: skewX(-4deg);
+/* The wordmark image, in an h1 so every page keeps its heading. */
+.site-logo {
+  width: min(310px, 82vw);
+  margin: 0 auto;
+  line-height: 0;
 }
 
-h1::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 48%;
-  width: calc(100% + 36px);
-  height: 0.82em;
-  background: var(--accent);
-  transform: translate(-50%, -50%) skewX(-8deg);
-  z-index: -1;
+.site-logo a {
+  display: block;
+}
+
+.site-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .subtitle {
@@ -2259,8 +2249,8 @@ footer {
 /* ---------- responsive ---------- */
 
 @media (max-width: 700px) {
-  h1 {
-    font-size: 2.1rem;
+  .site-logo {
+    width: min(230px, 72vw);
   }
 
   table#board,

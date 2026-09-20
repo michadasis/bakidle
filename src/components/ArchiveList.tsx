@@ -9,6 +9,7 @@ import { dayIndexToDateSlug, formatArchiveDate, globalDayIndex } from "@/game/ti
 import { DayNumber, Toolbar } from "./Chrome";
 import { Icon } from "./Icon";
 import { HelpModal, SettingsModal, StatsModal } from "./Modals";
+import { SiteLogo } from "./SiteLogo";
 
 /** Every completed mode for a day, out of every mode that day could actually be played in. */
 function archiveDayProgress(day: number, settings: ReturnType<typeof useSettings>) {
@@ -39,7 +40,7 @@ export function ArchiveList() {
   return (
     <>
       <header>
-        <h1>BAKIDLE</h1>
+        <SiteLogo />
         <p className="subtitle">Guess the Baki character</p>
         <DayNumber />
       </header>
