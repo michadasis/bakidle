@@ -340,6 +340,11 @@ header {
   display: block;
   width: 100%;
   height: auto;
+  transition: transform 0.12s ease;
+}
+
+.site-logo:hover img {
+  transform: scale(1.06);
 }
 
 .subtitle {
